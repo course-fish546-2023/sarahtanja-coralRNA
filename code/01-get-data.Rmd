@@ -6,35 +6,41 @@ output: md_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,         # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  fig.width = 6,       # Set plot width in inches
+  fig.height = 4,      # Set plot height in inches
+  fig.align = "center" # Align plots to the center
+)
 ```
 
 # Getting RNAseq FASTQ Data Files
 
 prereqs : have sequence data files deposited on NCBI
 
+## 1. Get RNAseq files from National Center for Biotechnology Information (NCBI) Sequence Read Archive (SRA)
+
 👀Checkout some background info on [The Sequence Read Archive (SRA)](https://linsalrob.github.io/ComputationalGenomicsManual/Databases/SRA.html#:~:text=A%20Study%20(SRP)%20has%20one,want%20to%20download%20from%20NCBI.) and the [SRA factsheet](https://www.ncbi.nlm.nih.gov/core/assets/sra/files/Factsheet_SRA.pdf)
 
 👀Checkout the [Bioconductor SRAdb package](https://bioconductor.org/packages/release/bioc/html/SRAdb.html)
 
-## 1. Get RNAseq files from National Center for Biotechnology Information (NCBI) Sequence Read Archive (SRA)
-
-```{r install packages message=FALSE, warning=FALSE}
+```{r install packages}
 if ("BiocManager" %in% rownames(installed.packages()) == 'FALSE') install.packages("BiocManager") 
 
 if ("SRAdb" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install("SRAdb")
 ```
 
-```{r load libraries message=FALSE, warning=FALSE}
+```{r load libraries}
 library(SRAdb)
 library(tidyverse)
 ```
 
-### Obtain Run (SRR) numbers
+First we want to get an idea of the files we are downloading and the samples that generated the data. We will start by looking at the metadata for the samples.
 
-> *"Results are called runs (SRR). Runs comprise the data gathered for a sample or sample bundle and refer to a defining experiment."*
-
-First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA900235). In order to do this we need a list of SRR numbers that identify the specific sequence files for RNAseq. Go to the [SRA links](https://www.ncbi.nlm.nih.gov/sra?LinkName=bioproject_sra_all&from_uid=900235) for BioProject 900235 and select all the RNAseq files of interest. In the upper right hand corner, I selected "Send to" and "File". This outputs a .txt file with a list of all SRR numbers.
+##### Get sample metadata :
 
 ```{bash}
 # navigate to data directory
@@ -48,8 +54,16 @@ curl -O https://raw.githubusercontent.com/AHuffmyer/EarlyLifeHistory_Energetics/
 ```{r}
 #pull data into R and rename it metadata 
 metadata <- read_csv("../data/Sample_Info.csv")
-
 ```
+
+```{r}
+#look at the metadata
+head(metadata)
+```
+
+There are 39 samples in this dataset (AH1 - AH39).
+
+##### All the files should look like:
 
 +-------------------+-------------------------------+-----------------------------------+
 | **TagSeq seq ID** | **TagSeq File 1**             | **TagSeq biosample accession \#** |
@@ -132,3 +146,9 @@ metadata <- read_csv("../data/Sample_Info.csv")
 +-------------------+-------------------------------+-----------------------------------+
 | AH39              | AH39_S70_L002_R1_001.fastq.gz | SRR22293451                       |
 +-------------------+-------------------------------+-----------------------------------+
+
+### Obtain Run (SRR) numbers
+
+> *"Results are called runs (SRR). Runs comprise the data gathered for a sample or sample bundle and refer to a defining experiment."*
+
+First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA900235). In order to do this we need a list of SRR numbers that identify the specific sequence files for RNAseq. Go to the [SRA links](https://www.ncbi.nlm.nih.gov/sra?LinkName=bioproject_sra_all&from_uid=900235) for BioProject 900235 and select all the RNAseq files of interest. In the upper right hand corner, I selected "Send to" and "File". This outputs a .txt file with a list of all SRR numbers.
