@@ -19,13 +19,15 @@ knitr::opts_chunk$set(
 
 # Getting RNAseq FASTQ Data Files
 
-prereqs : have sequence data files deposited on NCBI
+prereqs :
+
+-   have sequence data files deposited on NCBI
+
+-   operate within RStudio in a cloud environment (JupyterHub or Roberts Lab Raven server) with lots of drive space! These fastq files are really big so you don't want to download them onto your local computer
 
 ## 1. Get RNAseq files from National Center for Biotechnology Information (NCBI) Sequence Read Archive (SRA)
 
 👀Checkout some background info on [The Sequence Read Archive (SRA)](https://linsalrob.github.io/ComputationalGenomicsManual/Databases/SRA.html#:~:text=A%20Study%20(SRP)%20has%20one,want%20to%20download%20from%20NCBI.) and the [SRA factsheet](https://www.ncbi.nlm.nih.gov/core/assets/sra/files/Factsheet_SRA.pdf)
-
-👀Checkout the [Bioconductor SRAdb package](https://bioconductor.org/packages/release/bioc/html/SRAdb.html)
 
 ```{r install packages}
 if ("BiocManager" %in% rownames(installed.packages()) == 'FALSE') install.packages("BiocManager") 
@@ -157,15 +159,36 @@ First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](h
 
 [![screen capture of SRA link webpage for BioProject 900235](images/ncbi-sra-links.png)](https://www.ncbi.nlm.nih.gov/sra?LinkName=bioproject_sra_all&from_uid=900235)
 
-## Do we use SRAdb R package? 
+## Do we use SRAdb R package? ...NO
 
 ```{r}
 browseVignettes("SRAdb")
 ```
 
-We have to get the SRAdb SQLite file from the online location. The download
-and uncompress steps are done automatically with a single command, `getSRAdbFile( )`, which has defaults `getSRAdbFile( destdir = getwd(), destfile = "SRAmetadb.sqlite.gz", method )`
+We have to get the SRAdb SQLite file from the online location. The download and uncompress steps are done automatically with a single command, `getSRAdbFile( )`, which has defaults `getSRAdbFile( destdir = getwd(), destfile = "SRAmetadb.sqlite.gz", method )`
 
 ```{r}
 getSRAdbFile(destdir = "../data")
 ```
+
+## SRA Download
+
+Roberts Lab Resources Github [issue#1569](https://github.com/RobertsLab/resources/issues/1569) thread
+
+[SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?query_key=9&WebEnv=MCID_64358c3e49f6486f57b185c1&o=acc_s%3Aa)
+
+```{r, engine='bash'}
+/home/shared/sratoolkit.2.11.2-ubuntu64/bin/fasterq-dump.2.11.2 \
+--outdir /home/sr320/ncbi  \
+--split-files \
+--threads 27 \
+--mem 100GB \
+--progress \
+SRR8601366 \
+SRR8601367 \
+SRR8601369
+```
+
+sratoolkit.2.11.2-ubuntu6/bin/fasterq-dump.2.11.2
+
+## NCBI Data Download
