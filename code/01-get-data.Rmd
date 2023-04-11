@@ -191,4 +191,8 @@ SRR8601369
 
 sratoolkit.2.11.2-ubuntu6/bin/fasterq-dump.2.11.2
 
+Path to download fastq files to in Raven:
+
+/home/shared/8TB_HDD_01/
+
 ## NCBI Data Download
