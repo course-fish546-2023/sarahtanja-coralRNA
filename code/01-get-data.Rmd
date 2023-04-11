@@ -8,7 +8,7 @@ output: md_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,         # Display code chunks
-  eval = TRUE,         # Evaluate code chunks
+  eval = FALSE,         # Evaluate code chunks
   warning = FALSE,     # Hide warnings
   message = FALSE,     # Hide messages
   fig.width = 6,       # Set plot width in inches
@@ -42,7 +42,7 @@ First we want to get an idea of the files we are downloading and the samples tha
 
 ##### Get sample metadata :
 
-```{bash}
+```{r , enginebash}
 # navigate to data directory
 cd ../data
 
