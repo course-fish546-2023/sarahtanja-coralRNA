@@ -70,7 +70,7 @@ There are 39 samples (rows) with 8 metadata columns in this tibble dataset (AH1 
 ##### All 39 TagSeq files associated with these samples:
 
 | **TagSeq seq ID** | **TagSeq File 1**             | **TagSeq biosample accession \#** |
-|------------------|-------------------------|----------------------------|
+|-------------------|-------------------------|----------------------------|
 | AH1               | AH1_S32_L002_R1_001.fastq.gz  | SRR22293483                       |
 | AH2               | AH2_S33_L002_R1_001.fastq.gz  | SRR22293482                       |
 | AH3               | AH3_S34_L002_R1_001.fastq.gz  | SRR22293471                       |
@@ -143,7 +143,7 @@ Roberts Lab Resources Github [issue#1569](https://github.com/RobertsLab/resource
 
 ```{r, engine='bash'}
 /home/shared/sratoolkit.2.11.2-ubuntu64/bin/fasterq-dump.2.11.2 \
---outdir /home/sr320/ncbi  \
+--outdir /home/shared/8TB_HDD_01  \
 --split-files \
 --threads 27 \
 --mem 100GB \
@@ -153,9 +153,15 @@ SRR8601367 \
 SRR8601369
 ```
 
-sratoolkit.2.11.2-ubuntu6/bin/fasterq-dump.2.11.2
+```{r}
+/home/shared/sratoolkit.3.0.2-ubuntu64/bin/./fasterq-dump \
+--outdir /home/shared/8TB_HDD_02/sam/ \
+--progress \
+SRR8601366 \
+SRR8601367
+```
 
-Path to download fastq files to in Raven:
+Path to download fastq files in Raven:
 
 /home/shared/8TB_HDD_01/
 
