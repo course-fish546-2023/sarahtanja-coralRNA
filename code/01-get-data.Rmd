@@ -141,24 +141,25 @@ Roberts Lab Resources Github [issue#1569](https://github.com/RobertsLab/resource
 
 [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?query_key=9&WebEnv=MCID_64358c3e49f6486f57b185c1&o=acc_s%3Aa)
 
+SRR_Acc_list.txt
+
 ```{r, engine='bash'}
-/home/shared/sratoolkit.2.11.2-ubuntu64/bin/fasterq-dump.2.11.2 \
---outdir /home/shared/8TB_HDD_01  \
---split-files \
---threads 27 \
---mem 100GB \
---progress \
-SRR8601366 \
-SRR8601367 \
-SRR8601369
+# move to large data hardrive 
+cd /home/shared/8TB_HDD_01
+# make a new directory named 'mcap', short for Montipora capitata
+mkdir mcap
 ```
 
-```{r}
+```{r, engine='bash', cache=TRUE}
 /home/shared/sratoolkit.3.0.2-ubuntu64/bin/./fasterq-dump \
---outdir /home/shared/8TB_HDD_02/sam/ \
+--outdir /home/shared/8TB_HDD_01/mcap \
 --progress \
-SRR8601366 \
-SRR8601367
+SRR22293447 \
+SRR22293448 \
+SRR22293449 \
+SRR22293464 \
+SRR22293466 \
+SRR22293467
 ```
 
 Path to download fastq files in Raven:
