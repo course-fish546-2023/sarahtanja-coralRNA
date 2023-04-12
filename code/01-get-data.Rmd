@@ -70,7 +70,7 @@ There are 39 samples (rows) with 8 metadata columns in this tibble dataset (AH1 
 ##### All 39 TagSeq files associated with these samples:
 
 | **TagSeq seq ID** | **TagSeq File 1**             | **TagSeq biosample accession \#** |
-|-------------------|-------------------------|----------------------------|
+|-------------------|-------------------------------|-----------------------------------|
 | AH1               | AH1_S32_L002_R1_001.fastq.gz  | SRR22293483                       |
 | AH2               | AH2_S33_L002_R1_001.fastq.gz  | SRR22293482                       |
 | AH3               | AH3_S34_L002_R1_001.fastq.gz  | SRR22293471                       |
