@@ -127,7 +127,7 @@ cd /home/shared/8TB_HDD_01
 mkdir mcap
 ```
 
-## Download the files
+# Download the fastq files
 
 Roberts Lab Resources Github [issue#1569](https://github.com/RobertsLab/resources/issues/1569) thread
 
@@ -170,5 +170,5 @@ ls
 The fastq files have been downloaded!
 
 
-
+# Download Reference Genome
 
