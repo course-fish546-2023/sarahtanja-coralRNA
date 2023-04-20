@@ -114,11 +114,11 @@ To make things easier and faster, we're going to compare 2 life-history groups, 
 
 First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA900235). In order to do this we need a list of SRR numbers that identify the specific sequence files for RNAseq. Go to the [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?query_key=9&WebEnv=MCID_64358c3e49f6486f57b185c1&o=acc_s%3Aa) for BioProject 900235 and select the RNAseq files of interest.
 
-## SRA Download
+![SRA run selector, downloading 8 fastq files (4 Embryo, 4 Attached Recruits)](images/sra-run-selector.png){fig-align="center"}
 
-Roberts Lab Resources Github [issue#1569](https://github.com/RobertsLab/resources/issues/1569) thread
+Select the files of interest, click 'Accession List' and the list of file run ID's will be downloaded in a text file named `SRR_Acc_list.txt` , upload this list into the `data` folder.
 
-SRR_Acc_list.txt
+## Navigate to or create the directory where you will download the fastq files
 
 ```{r, engine='bash'}
 # move to large data hard-drive 
@@ -126,6 +126,12 @@ cd /home/shared/8TB_HDD_01
 # make a new directory named 'mcap', short for Montipora capitata
 mkdir mcap
 ```
+
+## Download the files
+
+Roberts Lab Resources Github [issue#1569](https://github.com/RobertsLab/resources/issues/1569) thread
+
+Using `sratoolkit.3.0.2-ubuntu64` which is already downloaded in `/home/shared` folder
 
 ```{r, engine='bash', cache=TRUE}
 /home/shared/sratoolkit.3.0.2-ubuntu64/bin/./fasterq-dump \
@@ -138,6 +144,8 @@ SRR22293464 \
 SRR22293466 \
 SRR22293467
 ```
+
+The fastq files have been downloaded!
 
 Absolute path to fastq files in raven:
 
