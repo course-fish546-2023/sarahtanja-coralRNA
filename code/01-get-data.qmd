@@ -133,6 +133,10 @@ Roberts Lab Resources Github [issue#1569](https://github.com/RobertsLab/resource
 
 Using `sratoolkit.3.0.2-ubuntu64` which is already downloaded in `/home/shared` folder
 
+::: callout-caution
+The following code will take some time, run it and go take a wee break
+:::
+
 ```{r, engine='bash', cache=TRUE}
 /home/shared/sratoolkit.3.0.2-ubuntu64/bin/./fasterq-dump \
 --outdir /home/shared/8TB_HDD_01/mcap \
@@ -140,19 +144,31 @@ Using `sratoolkit.3.0.2-ubuntu64` which is already downloaded in `/home/shared` 
 SRR22293447 \
 SRR22293448 \
 SRR22293449 \
-SRR22293464 \
-SRR22293466 \
-SRR22293467
+SRR22293450 \
+SRR22293451 \
+SRR22293452 \
+SRR22293453 \
+SRR22293454
+```
+
+Absolute path to fastq files in raven:
+
+`/home/shared/8TB_HDD_01/mcap/`
+
+Relative path to fastq files in raven:
+
+`cd ../../../../../8TB_HDD_01/mcap/`
+
+Check that the fastq files are downloaded:
+```{r, engine='bash'}
+pwd
+cd ../../../../../8TB_HDD_01/mcap
+pwd
+ls
 ```
 
 The fastq files have been downloaded!
 
-Absolute path to fastq files in raven:
 
-/home/shared/8TB_HDD_01/mcap/
 
-Relative path to fastq files in raven:
 
-cd ../../../../8TB_HDD_01/mcap/
-
-## NCBI Data Download
