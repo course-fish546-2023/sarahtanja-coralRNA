@@ -1,0 +1,150 @@
+---
+title: "01-get-data"
+author: "Sarah Tanja"
+date: "4/11/2023"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,         # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  fig.width = 6,       # Set plot width in inches
+  fig.height = 4,      # Set plot height in inches
+  fig.align = "center" # Align plots to the center
+)
+```
+
+# Getting RNAseq FASTQ Data Files
+
+prereqs :
+
+-   sequence data files are deposited on NCBI
+
+-   operating within RStudio on a Unix OS (Roberts Lab Raven server) with lots of drive space! These fastq files are really big so you don't want to download them onto your local computer
+
+# Get RNAseq files from National Center for Biotechnology Information (NCBI) Sequence Read Archive (SRA)
+
+::: callout-info
+Checkout some background info on [The Sequence Read Archive (SRA)](https://linsalrob.github.io/ComputationalGenomicsManual/Databases/SRA.html#:~:text=A%20Study%20(SRP)%20has%20one,want%20to%20download%20from%20NCBI.) and the [SRA factsheet](https://www.ncbi.nlm.nih.gov/core/assets/sra/files/Factsheet_SRA.pdf)
+:::
+
+## Install packages
+
+```{r install-packages, cache=TRUE}
+if ("BiocManager" %in% rownames(installed.packages()) == 'FALSE') install.packages("BiocManager") 
+
+if ("SRAdb" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install("SRAdb")
+```
+
+## Load packages
+
+```{r load-packages, cache=TRUE}
+library(SRAdb)
+library(tidyverse)
+```
+
+First we want to get an idea of the files we are downloading and the samples that generated the data. We will start by looking at the metadata for the samples.
+
+## Get sample metadata
+
+```{r , engine=bash}
+# navigate to data directory
+cd ../data
+
+# download metadata from the git repo into the data directory
+curl -O https://raw.githubusercontent.com/AHuffmyer/EarlyLifeHistory_Energetics/master/Mcap2020/Data/TagSeq/Sample_Info.csv  
+
+```
+
+```{r}
+#pull data into R and rename it metadata 
+metadata <- read_csv("../data/Sample_Info.csv")
+```
+
+Check file integrity (metadata in R vs. original file on Git repo) with `md5sum`
+
+::: callout-info
+[Learn How to Generate and Verify Files with MD5 Checksum in Linux](https://www.tecmint.com/generate-verify-check-files-md5-checksum-linux/)
+:::
+
+```{r, engine='bash'}
+cd ../data
+md5sum Sample_Info.csv
+```
+
+```{r, engine='bash'}
+curl https://raw.githubusercontent.com/AHuffmyer/EarlyLifeHistory_Energetics/master/Mcap2020/Data/TagSeq/Sample_Info.csv | md5sum
+```
+
+Still trying to work out the hash, this code chunk is not working
+
+```{r, engine=bash}
+
+online_md5="$(cd ../data | curl -O https://raw.githubusercontent.com/AHuffmyer/EarlyLifeHistory_Energetics/master/Mcap2020/Data/TagSeq/Sample_Info.csv | md5sum )"
+
+local_md5="$(~/sarahtanja-coralRNA/data/Sample_Info.csv | md5sum )"
+
+if [ "$online_md5" = "$local_md5" ]; then
+    echo "hurray, they are equal!"
+```
+
+::: callout-caution
+md5sum only verifies/works with the file content rather than the file name.
+:::
+
+```{r}
+#look at the metadata
+head(metadata)
+```
+
+There are 39 samples (rows) with 8 metadata columns in this tibble dataset (AH1 - AH39). These samples are *Montipora capitata* coral taken at different life-stages (denoted by column names `time-stage` and `code` ), and RNA extracted and sequenced using Tag-Seq.
+
+[![M. capitata development diagram by A. Huffmyer](https://user-images.githubusercontent.com/32178010/211181816-cf21abb7-7038-4f86-9aca-3ca326a958ce.png)](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics)
+
+## Select a sub-sample of files
+
+To make things easier and faster, we're going to compare 2 life-history groups, with an n=4 for each group. In this case, let's compare 4 Embryos (an early stage) to 4 Attached Recruits (a later stage).
+
+### Use SRA Run Selector to make a .txt file list of Run (SRR) numbers
+
+> *"Results are called runs (SRR). Runs comprise the data gathered for a sample or sample bundle and refer to a defining experiment."*
+
+First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA900235). In order to do this we need a list of SRR numbers that identify the specific sequence files for RNAseq. Go to the [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?query_key=9&WebEnv=MCID_64358c3e49f6486f57b185c1&o=acc_s%3Aa) for BioProject 900235 and select the RNAseq files of interest.
+
+## SRA Download
+
+Roberts Lab Resources Github [issue#1569](https://github.com/RobertsLab/resources/issues/1569) thread
+
+SRR_Acc_list.txt
+
+```{r, engine='bash'}
+# move to large data hard-drive 
+cd /home/shared/8TB_HDD_01
+# make a new directory named 'mcap', short for Montipora capitata
+mkdir mcap
+```
+
+```{r, engine='bash', cache=TRUE}
+/home/shared/sratoolkit.3.0.2-ubuntu64/bin/./fasterq-dump \
+--outdir /home/shared/8TB_HDD_01/mcap \
+--progress \
+SRR22293447 \
+SRR22293448 \
+SRR22293449 \
+SRR22293464 \
+SRR22293466 \
+SRR22293467
+```
+
+Absolute path to fastq files in raven:
+
+/home/shared/8TB_HDD_01/mcap/
+
+Relative path to fastq files in raven:
+
+cd ../../../../8TB_HDD_01/mcap/
+
+## NCBI Data Download
