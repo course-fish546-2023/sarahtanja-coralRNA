@@ -59,6 +59,7 @@ This code sets the max_file_size variable to 100 MB and then uses the find comma
 Save the pre-commit file and make it executable by running the following command in Terminal:
 
 ```{r, engine='bash'}
+pwd
 cd ../../
 chmod +x .git/hooks/pre-commit
 ```
