@@ -1,0 +1,13 @@
+{
+	"n_targets": 54384,
+	"n_bootstraps": 0,
+	"n_processed": 4528419,
+	"n_pseudoaligned": 909428,
+	"n_unique": 858108,
+	"p_pseudoaligned": 20.1,
+	"p_unique": 18.9,
+	"kallisto_version": "0.46.1",
+	"index_version": 10,
+	"start_time": "Tue Apr 25 17:03:56 2023",
+	"call": "/home/shared/kallisto/kallisto quant -i ../data/mcap_rna.index -o ../output/kallisto_01/SRR22293450 -t 40 --single -l 100 -s 10 /home/shared/8TB_HDD_01/mcap/SRR22293450.fastq"
+}
