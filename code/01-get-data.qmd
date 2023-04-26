@@ -1,11 +1,33 @@
 ---
 title: "01-get-data"
 author: "Sarah Tanja"
-date: "4/11/2023"
-output: md_document
+date: "`r format(Sys.time(), '%d %B, %Y')`"  
+format:
+  html:
+    df-print: paged
+    toc: true
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: arrow
+    code-overflow: wrap
+    theme:
+      light: sandstone
+      dark: vapor
+  gfm: default
 ---
 
+Environment pre-reqs:
+- sequence data files deposited on NCBI 
+- code and commentary written using Quarto 
+- operating within RStudio on a Unix OS (Roberts Lab Raven server)
+
+
 ```{r setup, include=FALSE}
+
 knitr::opts_chunk$set(
   echo = TRUE,         # Display code chunks
   eval = FALSE,         # Evaluate code chunks
@@ -15,29 +37,18 @@ knitr::opts_chunk$set(
   fig.height = 4,      # Set plot height in inches
   fig.align = "center" # Align plots to the center
 )
+
+# The following setting is important, do not omit.
+options(stringsAsFactors = FALSE) #Set Strings to character
+
 ```
 
-
-prereqs :
-
--   sequence data files are deposited on NCBI
-
--   operating within RStudio on a Unix OS (Roberts Lab Raven server) with lots of drive space! These fastq files are really big so you don't want to download them onto your local computer
 
 ## Install Packages
 
 ```{r install-packages, eval=TRUE, cache=TRUE}
 
-if ("knitr" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install("knitr") 
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
-if ("kableExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('kableExtra')
-if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap') 
-if ("RColorBrewer" %in% rownames(installed.packages()) == 'FALSE') install.packages('RColorBrewer') 
-if ("data.table" %in% rownames(installed.packages()) == 'FALSE') install.packages('data.table') 
-if ("DT" %in% rownames(installed.packages()) == 'FALSE') install.packages('DT')
-if ("Biostrings" %in% rownames(installed.packages()) == 'FALSE') install.packages('Biostrings') 
-if ("BiocManager" %in% rownames(installed.packages()) == 'FALSE') install.packages('BiocManager') 
-if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install('DESeq2')
 if ("SRAdb" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install("SRAdb")
  
 ```
@@ -48,14 +59,6 @@ if ("SRAdb" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install
 library(SRAdb)
 library(tidyverse)
 ```
-
-
-# Get TagSeq FASTQ files from National Center for Biotechnology Information (NCBI) Sequence Read Archive (SRA)
-
-::: callout-info
-Checkout some background info on [The Sequence Read Archive (SRA)](https://linsalrob.github.io/ComputationalGenomicsManual/Databases/SRA.html#:~:text=A%20Study%20(SRP)%20has%20one,want%20to%20download%20from%20NCBI.) and the [SRA factsheet](https://www.ncbi.nlm.nih.gov/core/assets/sra/files/Factsheet_SRA.pdf)
-:::
-
 
 First we want to get an idea of the files we are downloading and the samples that generated the data. We will start by looking at the metadata for the samples.
 
@@ -109,6 +112,15 @@ To make things easier and faster, we're going to compare 2 life-history groups, 
 ::: callout-warning
 In this script, I am going to use these samples as 'fake-data' and pretend that they represent the experiment that I conducted (but don't have sequence data files for ... yet) Once I get my sequence files I will swap my files for the ones I've borrowed. 
 :::
+
+
+# Get TagSeq FASTQ files from National Center for Biotechnology Information (NCBI) Sequence Read Archive (SRA)
+
+::: callout-info
+Checkout some background info on [The Sequence Read Archive (SRA)](https://linsalrob.github.io/ComputationalGenomicsManual/Databases/SRA.html#:~:text=A%20Study%20(SRP)%20has%20one,want%20to%20download%20from%20NCBI.) and the [SRA factsheet](https://www.ncbi.nlm.nih.gov/core/assets/sra/files/Factsheet_SRA.pdf)
+:::
+
+
 
 
 ### Use SRA Run Selector to make a .txt file list of Run (SRR) numbers
@@ -171,79 +183,5 @@ ls
 ```
 
 The fastq files have been downloaded!
-
-# Download Annotated Reference Genes for *Montipora capitata*
-<https://github.com/urol-e5/deep-dive>
-
-<http://cyanophora.rutgers.edu/montipora/>
-
-Nucleotide Coding Sequence (CDS)
-<http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz>
-
- Downloading Reference
-
-This code grabs the *Montipora capitata* fasta file (rna.fna) of genes.
-
-```{r, engine='bash'}
-# change to work in data directory
-cd ../data
-# download the rna.fna file to data directory from the gannet server
-curl -O http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz
-```
-
-```{r, engine='bash'}
-# check sum
-cd ../data
-md5sum Montipora_capitata_HIv3.genes.cds.fna
-```
-# Running kallisto
-
-[kallisto](https://pachterlab.github.io/kallisto/) is a software that can be downloaded and unzipped into a `programs` directory outside of the repo.
-
-> Kallisto is a pseudo-aligner, it does not need a genome to align to! It uses the sequences in the dataset to create it's own 'reference'
-
-In our case, it is already installed on *raven* (`/home/shared/kallisto/kallisto`), and can be checked by running the `version` command as below:
-
-```{r, engine='bash'}
-/home/shared/kallisto/kallisto version
-```
-In the next code chunk we create the index file which **insert what the index file is for here**.
-
-Creating the index file can take some time.
-
-This code is indexing the file `rna.fna` while also renaming it as `mcap_rna.index`. `/home/shared/kallisto/kallisto` is the absolute path to the kallisto program from within the *raven* server, while the lines after the `index` command indicate where to get the data from (the `rna.fna` file) and where to write the file to.
-
-```{r, engine='bash'}
-/home/shared/kallisto/kallisto \
-index -i \
-../data/mcap_rna.index \
-../data/Montipora_capitata_HIv3.genes.cds.fna
-```
-
-The next chunk performs the following steps:
-
--   creates a subdirectory `kallisto_01` in the `output` folder using `mkdir`
-```{r, engine='bash'}
-cd ../
-mkdir output/kallisto_01
-```
-
--   Uses the `find` utility to search for all files in the `/home/shared/8TB_HDD_01/mcap/` directory that match the pattern `*.fastq`.
--   Uses the `basename` command to extract the base filename of each file (i.e., the filename without the directory path), and removes the suffix `.fastq`.
--   Runs the kallisto `quant` command on each input file, with the following options:
--   `-i ../data/mcap_rna.index`: Use the kallisto index file located at `../data/mcap_rna.index`.
--   `-o ../output/kallisto_01/{}`: Write the output files to a directory called `../output/kallisto_01/` with a subdirectory named after the base filename of the input file (the {} is a placeholder for the base filename).
--   `-t 40`: Use 40 threads for the computation.
--   `--single -l 100 -s 10`: Specify that the input file contains single-end reads (--single), with an average read length of 100 (-l 100) and a standard deviation of 10 (-s 10).
--   The input file to process is specified using the {} placeholder, which is replaced by the base filename from the previous step.
-
-```{r, engine='bash'}
-find /home/shared/8TB_HDD_01/mcap/*.fastq \
-| xargs basename -s .fastq | xargs -I{} /home/shared/kallisto/kallisto \
-quant -i ../data/mcap_rna.index \
--o ../output/kallisto_01/{} \
--t 40 \
---single -l 100 -s 10 /home/shared/8TB_HDD_01/mcap/{}.fastq
-```
 
 

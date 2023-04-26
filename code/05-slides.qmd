@@ -1,5 +1,6 @@
 ---
 title: "DGE in corals of different life histories"
+date: "`r format(Sys.time(), '%d %B, %Y')`"  
 format: 
   revealjs:
     theme: simple

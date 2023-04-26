@@ -1,6 +1,5 @@
 ---
-title: "Differential Gene Expression Analysis with Kallisto & DESeq2"
-subtitle: "a pretty report for [FISH 546](https://sr320.github.io/course-fish546-2023/assignments/03-knit.html)"
+title: "Set Hooks"
 author: "Sarah Tanja"
 date: "`r format(Sys.time(), '%d %B, %Y')`"  
 format:
