@@ -20,15 +20,7 @@ format:
   gfm: default
 ---
 
-Environment pre-reqs:
-- sequence data files deposited on NCBI 
-- code and commentary written in Quarto 
-- operating within RStudio on a Unix OS (Roberts Lab raven server)
-- file structure:
-    code
-    data
-    output
-
+Environment pre-reqs: - sequence data files deposited on NCBI - code and commentary written in Quarto - operating within RStudio on a Unix OS (Roberts Lab raven server) - file structure: code data output
 
 ```{r setup, include=FALSE}
 
@@ -47,7 +39,6 @@ options(stringsAsFactors = FALSE) #Set Strings to character
 
 ```
 
-
 ## Install Packages
 
 ```{r install-packages, eval=TRUE, cache=TRUE}
@@ -63,7 +54,6 @@ if ("SRAdb" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install
 library(SRAdb)
 library(tidyverse)
 ```
-
 
 ## Get sample metadata
 
@@ -83,7 +73,7 @@ curl -O https://raw.githubusercontent.com/AHuffmyer/EarlyLifeHistory_Energetics/
 metadata <- read_csv("../data/Sample_Info.csv")
 ```
 
-### Check file integrity (metadata in R vs. original file on Git repo) with `md5sum`
+### Check file integrity with `md5sum`
 
 ::: callout-info
 [Learn How to Generate and Verify Files with MD5 Checksum in Linux](https://www.tecmint.com/generate-verify-check-files-md5-checksum-linux/)
@@ -94,12 +84,12 @@ cd ../data
 md5sum Sample_Info.csv > md5.transferred
 ```
 
-
 ```{r, engine='bash'}
 cd ../data
 cmp Sample_Info.csv md5.transferred
 ```
-These files differ by 1 byte, and I haven't yet figured out why... possibly a windows vs unix thing
+
+> These files differ by 1 byte, and I haven't yet figured out why... possibly a windows vs unix thing
 
 ```{r}
 #look at the metadata
@@ -109,7 +99,6 @@ head(metadata)
 There are 39 samples (rows) with 8 metadata columns in this tibble dataset (AH1 - AH39). These samples are *Montipora capitata* coral taken at different life-stages (denoted by column names `time-stage` and `code` ), and RNA extracted and sequenced using Tag-Seq.
 
 [![M. capitata development diagram by A. Huffmyer](https://user-images.githubusercontent.com/32178010/211181816-cf21abb7-7038-4f86-9aca-3ca326a958ce.png)](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics)
-
 
 # Get TagSeq FASTQ files from National Center for Biotechnology Information (NCBI) Sequence Read Archive (SRA)
 
@@ -123,7 +112,7 @@ NCBI sequences have been trimmed and cleaned and are ready for alignment and ana
 
 > *"Results are called runs (SRR). Runs comprise the data gathered for a sample or sample bundle and refer to a defining experiment."*
 
-First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA900235). In order to do this we need a list of SRR numbers that identify the specific sequence files for RNAseq. Go to the [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?query_key=9&WebEnv=MCID_64358c3e49f6486f57b185c1&o=acc_s%3Aa) for BioProject 900235 and select the RNAseq files of interest.
+First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA900235). In order to do this we need a list of SRR numbers that identify the specific sequence files for RNA. Go to the [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?query_key=9&WebEnv=MCID_64358c3e49f6486f57b185c1&o=acc_s%3Aa) for BioProject 900235 and select the files of interest.
 
 To make things easier and faster, we're going to compare 2 life-history groups, with an n=4 for each group. In this case, let's compare 4 Embryos (an early stage) to 4 Attached Recruits (a later stage).
 
@@ -173,13 +162,12 @@ Relative path to fastq files in raven:
 `cd ../../../../../8TB_HDD_01/mcap/`
 
 Check that the fastq files are downloaded:
+
 ```{r, engine='bash'}
-pwd
-cd ../../../../../8TB_HDD_01/mcap
-pwd
+cd /home/shared/8TB_HDD_01/mcap/
 ls
 ```
 
+::: callout-tip
 The fastq files have been downloaded!
-
-
+:::

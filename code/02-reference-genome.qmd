@@ -19,15 +19,20 @@ format:
   gfm: default
 ---
 
-# Download Annotated Reference Genes for *Montipora capitata*
+# Download Annotated Reference Genome for *Montipora capitata*
 
+Deep Dive project with genomes of interest:
 <https://github.com/urol-e5/deep-dive>
 
+*Montipora capitata* Genome version V3, Rutgers University:
 <http://cyanophora.rutgers.edu/montipora/>
 
-Nucleotide Coding Sequence (CDS) <http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz>
+Genome publication:
+<https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755>
 
-Downloading Reference
+Nucleotide Coding Sequence (CDS):
+<http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz>
+
 
 This code grabs the *Montipora capitata* fasta file (rna.fna) of genes.
 
@@ -36,27 +41,24 @@ This code grabs the *Montipora capitata* fasta file (rna.fna) of genes.
 cd ../data
 # download the rna.fna file to data directory from the gannet server
 curl -O http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz
+
+wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.assembly.fasta.gz
+
+wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz
 ```
+
+Obtain `Montipora_capitata_HIv3.genes_fixed.gff3` file by downloading from GitHub.
 
 ```{r, engine='bash'}
-# check sum
 cd ../data
-md5sum Montipora_capitata_HIv3.genes.cds.fna
+wget https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/raw/master/Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes_fixed.gff3.gz
 ```
-
-*Montipora capitata* Genome version V3, Rutgers University
-
-Genome publication:\
-<https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755>
 
 Obtain reference genome assembly and gff annotation file.
 
 ```         
 cd sequences/ 
 
-wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.assembly.fasta.gz
-
-wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz
 ```
 
 # Running kallisto
