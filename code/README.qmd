@@ -1,0 +1,5 @@
+# Differential Gene Expression Analysis
+
+::: callout-important
+**Pre-reqs:** This code contains relative paths that only work within the *raven* Roberts' Lab Server, where the data for this assignment is housed
+:::

@@ -1,5 +1,5 @@
 ---
-title: "01-get-data"
+title: "01-get-NCBI-sequences"
 author: "Sarah Tanja"
 date: "`r format(Sys.time(), '%d %B, %Y')`"  
 format:
@@ -22,8 +22,12 @@ format:
 
 Environment pre-reqs:
 - sequence data files deposited on NCBI 
-- code and commentary written using Quarto 
-- operating within RStudio on a Unix OS (Roberts Lab Raven server)
+- code and commentary written in Quarto 
+- operating within RStudio on a Unix OS (Roberts Lab raven server)
+- file structure:
+    code
+    data
+    output
 
 
 ```{r setup, include=FALSE}
@@ -60,9 +64,10 @@ library(SRAdb)
 library(tidyverse)
 ```
 
-First we want to get an idea of the files we are downloading and the samples that generated the data. We will start by looking at the metadata for the samples.
 
 ## Get sample metadata
+
+First we want to get an idea of the files we are downloading and the samples that generated the data. We will start by looking at the metadata for the samples.
 
 ```{r , engine=bash}
 # navigate to data directory
@@ -78,7 +83,7 @@ curl -O https://raw.githubusercontent.com/AHuffmyer/EarlyLifeHistory_Energetics/
 metadata <- read_csv("../data/Sample_Info.csv")
 ```
 
-Check file integrity (metadata in R vs. original file on Git repo) with `md5sum`
+### Check file integrity (metadata in R vs. original file on Git repo) with `md5sum`
 
 ::: callout-info
 [Learn How to Generate and Verify Files with MD5 Checksum in Linux](https://www.tecmint.com/generate-verify-check-files-md5-checksum-linux/)
@@ -86,15 +91,15 @@ Check file integrity (metadata in R vs. original file on Git repo) with `md5sum`
 
 ```{r, engine='bash'}
 cd ../data
-md5sum Sample_Info.csv
+md5sum Sample_Info.csv > md5.transferred
 ```
 
+
 ```{r, engine='bash'}
-curl https://raw.githubusercontent.com/AHuffmyer/EarlyLifeHistory_Energetics/master/Mcap2020/Data/TagSeq/Sample_Info.csv | md5sum
+cd ../data
+cmp Sample_Info.csv md5.transferred
 ```
-::: callout-caution
-md5sum only verifies/works with the file content rather than the file name.
-:::
+These files differ by 1 byte, and I haven't yet figured out why... possibly a windows vs unix thing
 
 ```{r}
 #look at the metadata
@@ -105,14 +110,6 @@ There are 39 samples (rows) with 8 metadata columns in this tibble dataset (AH1 
 
 [![M. capitata development diagram by A. Huffmyer](https://user-images.githubusercontent.com/32178010/211181816-cf21abb7-7038-4f86-9aca-3ca326a958ce.png)](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics)
 
-## Select a sub-sample of files
-
-To make things easier and faster, we're going to compare 2 life-history groups, with an n=4 for each group. In this case, let's compare 4 Embryos (an early stage) to 4 Attached Recruits (a later stage). This will represent 4 control to 4 pae-temp.
-
-::: callout-warning
-In this script, I am going to use these samples as 'fake-data' and pretend that they represent the experiment that I conducted (but don't have sequence data files for ... yet) Once I get my sequence files I will swap my files for the ones I've borrowed. 
-:::
-
 
 # Get TagSeq FASTQ files from National Center for Biotechnology Information (NCBI) Sequence Read Archive (SRA)
 
@@ -120,14 +117,15 @@ In this script, I am going to use these samples as 'fake-data' and pretend that 
 Checkout some background info on [The Sequence Read Archive (SRA)](https://linsalrob.github.io/ComputationalGenomicsManual/Databases/SRA.html#:~:text=A%20Study%20(SRP)%20has%20one,want%20to%20download%20from%20NCBI.) and the [SRA factsheet](https://www.ncbi.nlm.nih.gov/core/assets/sra/files/Factsheet_SRA.pdf)
 :::
 
-
-
+NCBI sequences have been trimmed and cleaned and are ready for alignment and analysis.
 
 ### Use SRA Run Selector to make a .txt file list of Run (SRR) numbers
 
 > *"Results are called runs (SRR). Runs comprise the data gathered for a sample or sample bundle and refer to a defining experiment."*
 
 First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA900235). In order to do this we need a list of SRR numbers that identify the specific sequence files for RNAseq. Go to the [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?query_key=9&WebEnv=MCID_64358c3e49f6486f57b185c1&o=acc_s%3Aa) for BioProject 900235 and select the RNAseq files of interest.
+
+To make things easier and faster, we're going to compare 2 life-history groups, with an n=4 for each group. In this case, let's compare 4 Embryos (an early stage) to 4 Attached Recruits (a later stage).
 
 ![SRA run selector, downloading 8 fastq files (4 Embryo, 4 Attached Recruits)](images/sra-run-selector.png){fig-align="center"}
 
