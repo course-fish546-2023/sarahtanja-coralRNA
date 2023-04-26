@@ -1,5 +1,5 @@
 ---
-title: "Differential Gene Expression in polluted and thermally stressed corals"
+title: "01-get-data"
 author: "Sarah Tanja"
 date: "4/11/2023"
 output: md_document
@@ -17,11 +17,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Differential Gene Expression Analysis
-
-::: callout-important
-**Pre-reqs:** This code contains relative paths that only work within the *raven* Roberts' Lab Server, where the data for this assignment is housed
-:::
 
 prereqs :
 
@@ -178,6 +173,7 @@ ls
 The fastq files have been downloaded!
 
 # Download Annotated Reference Genes for *Montipora capitata*
+<https://github.com/urol-e5/deep-dive>
 
 <http://cyanophora.rutgers.edu/montipora/>
 
