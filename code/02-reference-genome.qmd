@@ -1,0 +1,114 @@
+---
+title: "02-reference-genome"
+date: "`r format(Sys.time(), '%d %B, %Y')`"  
+format:
+  html:
+    df-print: paged
+    toc: true
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: arrow
+    code-overflow: wrap
+    theme:
+      light: sandstone
+      dark: vapor
+  gfm: default
+---
+
+# Download Annotated Reference Genome for *Montipora capitata*
+
+Deep Dive project with genomes of interest:
+<https://github.com/urol-e5/deep-dive>
+
+*Montipora capitata* Genome version V3, Rutgers University:
+<http://cyanophora.rutgers.edu/montipora/>
+
+Genome publication:
+<https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755>
+
+Nucleotide Coding Sequence (CDS):
+<http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz>
+
+
+This code grabs the *Montipora capitata* fasta file (rna.fna) of genes.
+
+```{r, engine='bash'}
+# change to work in data directory
+cd ../data
+# download the rna.fna file to data directory from the gannet server
+curl -O http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz
+
+wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.assembly.fasta.gz
+
+wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz
+```
+
+Obtain `Montipora_capitata_HIv3.genes_fixed.gff3` file by downloading from GitHub.
+
+```{r, engine='bash'}
+cd ../data
+wget https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/raw/master/Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes_fixed.gff3.gz
+```
+
+Obtain reference genome assembly and gff annotation file.
+
+```         
+cd sequences/ 
+
+```
+
+# Running kallisto
+
+[kallisto](https://pachterlab.github.io/kallisto/) is a software that can be downloaded and unzipped into a `programs` directory outside of the repo.
+
+> Kallisto is a pseudo-aligner, it does not need a genome to align to! It uses the sequences in the dataset to create it's own 'reference'
+
+In our case, it is already installed on *raven* (`/home/shared/kallisto/kallisto`), and can be checked by running the `version` command as below:
+
+```{r, engine='bash'}
+/home/shared/kallisto/kallisto version
+```
+
+In the next code chunk we create the index file which **insert what the index file is for here**.
+
+Creating the index file can take some time.
+
+This code is indexing the file `rna.fna` while also renaming it as `mcap_rna.index`. `/home/shared/kallisto/kallisto` is the absolute path to the kallisto program from within the *raven* server, while the lines after the `index` command indicate where to get the data from (the `rna.fna` file) and where to write the file to.
+
+```{r, engine='bash'}
+/home/shared/kallisto/kallisto \
+index -i \
+../data/mcap_rna.index \
+../data/Montipora_capitata_HIv3.genes.cds.fna
+```
+
+The next chunk performs the following steps:
+
+-   creates a subdirectory `kallisto_01` in the `output` folder using `mkdir`
+
+```{r, engine='bash'}
+cd ../
+mkdir output/kallisto_01
+```
+
+-   Uses the `find` utility to search for all files in the `/home/shared/8TB_HDD_01/mcap/` directory that match the pattern `*.fastq`.
+-   Uses the `basename` command to extract the base filename of each file (i.e., the filename without the directory path), and removes the suffix `.fastq`.
+-   Runs the kallisto `quant` command on each input file, with the following options:
+-   `-i ../data/mcap_rna.index`: Use the kallisto index file located at `../data/mcap_rna.index`.
+-   `-o ../output/kallisto_01/{}`: Write the output files to a directory called `../output/kallisto_01/` with a subdirectory named after the base filename of the input file (the {} is a placeholder for the base filename).
+-   `-t 40`: Use 40 threads for the computation.
+-   `--single -l 100 -s 10`: Specify that the input file contains single-end reads (--single), with an average read length of 100 (-l 100) and a standard deviation of 10 (-s 10).
+-   The input file to process is specified using the {} placeholder, which is replaced by the base filename from the previous step.
+
+```{r, engine='bash'}
+find /home/shared/8TB_HDD_01/mcap/*.fastq \
+| xargs basename -s .fastq | xargs -I{} /home/shared/kallisto/kallisto \
+quant -i ../data/mcap_rna.index \
+-o ../output/kallisto_01/{} \
+-t 40 \
+--single -l 100 -s 10 /home/shared/8TB_HDD_01/mcap/{}.fastq
+```
