@@ -1,5 +1,29 @@
+---
+editor: 
+  markdown: 
+    wrap: 72
+---
+
 # Differential Gene Expression Analysis
 
 ::: callout-important
-**Pre-reqs:** This code contains relative paths that only work within the *raven* Roberts' Lab Server, where the data for this assignment is housed
+**Pre-reqs:** This code contains relative paths that only work within
+the *raven* Roberts' Lab Server, where the data for this assignment is
+housed
 :::
+
+#### 00-set-hooks
+
+#### 01-get-data
+
+#### 02-build-reference-genome
+
+#### 03-align-hisat
+
+#### 04-create-kallisto-index
+
+#### 05-DESeq2
+
+#### 06-go-blast
+
+week05-presentation is published using Rpubs and can be found HERE.

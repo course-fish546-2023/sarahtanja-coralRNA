@@ -11,6 +11,18 @@ editor: visual
 
 ## Project Goal
 
+Build a reproducible script for differential gene expression (DGE) analysis of *Montipora capitata* rice coral samples.
+
+Desired Outputs:
+
+-   heatmap
+
+    -   shows what genes are differentially expressed, and the gene functions
+
+-   principle components analysis plot
+
+    -   show how similarity/dissimilarity
+
 ## Methods
 
 ### **Minimum Required components**
