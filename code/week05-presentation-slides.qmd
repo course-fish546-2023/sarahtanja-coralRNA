@@ -6,39 +6,196 @@ author: "Sarah Tanja"
 format: 
   revealjs:
     theme: simple
+    incremental: true
+    preview-links: true
 editor: visual
 ---
 
 ## Project Goal
 
-Build a reproducible script for differential gene expression (DGE) analysis of *Montipora capitata* rice coral samples.
+Build a reproducible script for differential gene expression (DGE) analysis of *Montipora capitata* rice coral samples using a reference genome
 
-Desired Outputs:
+## Borrowed Data
 
--   heatmap
-
-    -   shows what genes are differentially expressed, and the gene functions
-
--   principle components analysis plot
-
-    -   show how similarity/dissimilarity
+[![M. capitata development diagram by A. Huffmyer](https://user-images.githubusercontent.com/32178010/211181816-cf21abb7-7038-4f86-9aca-3ca326a958ce.png)](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics)
 
 ## Methods
 
-### **Minimum Required components**
+*What I need to do...*
 
-1.  Show core code
+-   Transcript Quantification (Alignment) with `HISAT2`
 
-2.  Show parts of initial data (could be first few lines etc)
+-   Differential Expression Analysis `HISAT2`& `DESeq2`
 
-3.  Include a table
+## But I got confused and used kallisto
 
-4.  Include image
+[04-create-kallisto-index](http://rpubs.com/sarah_tanja/1034362)
 
-5.  Include plot generated from code
+```{r}
+if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install('DESeq2')
+if ("kableExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('kableExtra')
 
-6.  Highlight specific lines of code in code block
+library(DESeq2)
+library(kableExtra)
+```
 
-## Preliminary Results
+```{r}
+countmatrix <- read.delim("../output/kallisto_01.isoform.counts.matrix", header = TRUE, sep = '\t')
+rownames(countmatrix) <- countmatrix$X
+countmatrix <- countmatrix[,-1]
+```
+
+And the result was this count matrix that I don't trust:
+
+```{r}
+countmatrix <- round(countmatrix, 0)
+head(countmatrix)
+```
+
+## DESeq Negative Binomial
+
+```{r}
+# make a dataframe 
+deseq2.colData <- data.frame(condition=factor(c(rep("embryos", 4), rep("recruits", 4))), 
+                             type=factor(rep("single-read", 8)))
+
+# set row names to match the column names in the count matrix
+rownames(deseq2.colData) <- colnames(data)
+
+# DESeqDataSet object created using the `DESeqDataSetFromMatrix` function
+deseq2.dds <- DESeqDataSetFromMatrix(countData = countmatrix,
+                                     colData = deseq2.colData, 
+                                     design = ~ condition)
+```
+
+The `DESeqDataSet` object, named `deseq.dds`, is then passed to the `DESeq()` function to fit a negative binomial model and estimate dispersions.
+
+```{r, echo=TRUE}
+deseq2.dds <- DESeq(deseq2.dds)
+deseq2.res <- results(deseq2.dds)
+deseq2.res <- deseq2.res[order(rownames(deseq2.res)), ]
+```
+
+```{r}
+str(deseq2.res)
+```
+
+```{r}
+dim(deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ])
+```
+
+# Plotting
+
+## PCA
+
+```{r}
+vsd <- vst(deseq2.dds, blind = FALSE)
+plotPCA(vsd, intgroup = "condition")
+```
+
+## Heatmap
+
+```{r}
+if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap') 
+library(pheatmap)
+```
+
+Top 50 Differentially Expressed Genes
+
+```{r}
+# Select top 50 differentially expressed genes
+res <- results(deseq2.dds)
+res_ordered <- res[order(res$padj), ]
+top_genes <- row.names(res_ordered)[1:50]
+# Extract counts and normalize
+counts <- counts(deseq2.dds, normalized = TRUE)
+counts_top <- counts[top_genes, ]
+# Log-transform counts
+log_counts_top <- log2(counts_top + 1)
+# Generate heatmap
+pheatmap(log_counts_top, scale = "row")
+
+```
+
+## Log2 Fold Change
+
+```{r}
+
+tmp <- deseq2.res
+# The main plot
+  plot(tmp$baseMean, tmp$log2FoldChange, pch=20, cex=0.45, ylim=c(-3, 3), log="x", col="darkgray",
+     main="DEG Coral Early Life History  (pval <= 0.05)",
+     xlab="mean of normalized counts",
+     ylab="Log2 Fold Change")
+# Getting the significant points and plotting them again so they're a different color
+tmp.sig <- deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ]
+points(tmp.sig$baseMean, tmp.sig$log2FoldChange, pch=20, cex=0.45, col="red")
+# 2 FC lines
+abline(h=c(-1,1), col="blue")
+```
+
+## Volcano Plot
+
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse') 
+library(tidyverse)
+```
+
+```{r}
+# Prepare the data for plotting
+res_df <- as.data.frame(deseq2.res)
+res_df$gene <- row.names(res_df)
+
+# Create volcano plot
+volcano_plot <- ggplot(res_df, aes(x = log2FoldChange, y = -log10(padj), color = padj < 0.05)) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  scale_color_manual(values = c("grey", "red")) +
+  labs(title = "Volcano Plot",
+       x = "Log2 Fold Change",
+       y = "-Log10 Adjusted P-value",
+       color = "Significantly\nDifferentially Expressed") +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.position = "top")
+
+# Print plot
+print(volcano_plot)
+```
 
 ## Next Steps
+
+Week06
+
+-   Go back and rebuild index file using `HISAT2` & align reads
+
+Week07
+
+-   Run Differential Expression Analysis using `HISAT2`& `DESeq2`
+
+Week08
+
+-   Debug all the inevitable mistakes
+
+-   Clean up scripts, add helpful tips
+
+Week09-10 If there's time...
+
+-   Go back and build scripts to work with raw sequence data:
+
+    -   Quality control with `FastQC` or `MultiQC`
+
+    -   Trim & Clean with `fastp` or `trimgalore`
+
+    -   Quality control trimmed sequences
+
+## Currently stuck on
+
+Create HISAT2 index for the reference genome
+hisat2-build path/to/reference_genome.fasta path/to/hisat2_index/genome
+```{r, engine='bash', eval=FALSE, echo=TRUE}
+#| code-line-numbers: "|199|200"
+/home/shared/hisat2-2.2.1/hisat2-build \
+-f ../data/Montipora_capitata_HIv3.assembly.fasta \
+../output/Mcapv3.index
+```

@@ -1,8 +1,26 @@
 ---
 title: "04-kallisto"
-format: html
+format:
+  html:
+    df-print: paged
+    toc: true
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: arrow
+    code-overflow: wrap
+    theme:
+      light: sandstone
+      dark: vapor
 editor: visual
 ---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(highlight = TRUE, eval = FALSE)
+```
 
 Check kallisto `version` with the following command:
 

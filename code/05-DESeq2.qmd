@@ -109,7 +109,7 @@ if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages(
 
 ```
 
-### Load LIbraries
+### Load Libraries
 
 ```{r}
 library(pheatmap)

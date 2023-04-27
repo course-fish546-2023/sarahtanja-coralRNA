@@ -122,6 +122,10 @@ NCBI sequences have been trimmed and cleaned and are ready for alignment and ana
 
 First, we need to obtain RNAseq files from NCBI from the project [PRJNA900235](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA900235). In order to do this we need a list of SRR numbers that identify the specific sequence files for RNA. Go to the [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?query_key=9&WebEnv=MCID_64358c3e49f6486f57b185c1&o=acc_s%3Aa) for BioProject 900235 and select the files of interest.
 
+::: callout-info
+These sequence files are single-stranded RNA
+:::
+
 To make things easier and faster, we're going to compare 2 life-history groups, with an n=4 for each group. In this case, let's compare 4 Embryos (an early stage) to 4 Attached Recruits (a later stage).
 
 ![SRA run selector, downloading 8 fastq files (4 Embryo, 4 Attached Recruits)](images/sra-run-selector.png){fig-align="center"}
@@ -129,6 +133,7 @@ To make things easier and faster, we're going to compare 2 life-history groups, 
 Select the files of interest, click 'Accession List' and the list of file run ID's will be downloaded in a text file named `SRR_Acc_list.txt` , upload this list into the `data` folder.
 
 ## Navigate to where you will download the fastq files
+
 Make sure this space has lots of storage
 
 ```{r, engine='bash'}
@@ -222,8 +227,7 @@ gunzip Montipora_capitata_HIv3.genes_fixed.gff3.gz
 gunzip Montipora_capitata_HIv3.assembly.fasta.gz
 ```
 
-So we now have the sample sequence files located at absolute path `/home/shared/8TB_HDD_01/mcap/` 
-And we have the reference genome V3 files located at `../data/`
+So we now have the sample sequence files located at absolute path `/home/shared/8TB_HDD_01/mcap/` And we have the reference genome V3 files located at `../data/`
 
 ::: callout-info
 **Next Step:** Go to `02-hisat` to align reads to the reference genome using RNAseq aligner HISAT2
