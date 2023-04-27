@@ -189,13 +189,15 @@ Week09-10 If there's time...
 
     -   Quality control trimmed sequences
 
-## Currently stuck on
+## Currently stuck on...
 
-Create HISAT2 index for the reference genome
-hisat2-build path/to/reference_genome.fasta path/to/hisat2_index/genome
+Create HISAT2 index for the reference genome hisat2-build path/to/reference_genome.fasta path/to/hisat2_index/genome
+
 ```{r, engine='bash', eval=FALSE, echo=TRUE}
-#| code-line-numbers: "|199|200"
+#| code-line-numbers: 4
 /home/shared/hisat2-2.2.1/hisat2-build \
 -f ../data/Montipora_capitata_HIv3.assembly.fasta \
 ../output/Mcapv3.index
 ```
+
+![](images/Mcapv3index.png)
