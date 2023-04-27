@@ -1,0 +1,32 @@
+---
+title: "Differential gene expression in *Montipora capitata* rice coral"
+subtitle: "a bite-size comparison of two groups"
+date: "`r format(Sys.time(), '%d %B, %Y')`"  
+author: "Sarah Tanja"
+format: 
+  revealjs:
+    theme: simple
+editor: visual
+---
+
+## Project Goal
+
+## Methods
+
+### **Minimum Required components**
+
+1.  Show core code
+
+2.  Show parts of initial data (could be first few lines etc)
+
+3.  Include a table
+
+4.  Include image
+
+5.  Include plot generated from code
+
+6.  Highlight specific lines of code in code block
+
+## Preliminary Results
+
+## Next Steps
