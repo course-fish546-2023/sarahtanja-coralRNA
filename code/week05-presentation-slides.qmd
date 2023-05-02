@@ -6,8 +6,8 @@ author: "Sarah Tanja"
 format: 
   revealjs:
     theme: simple
-    incremental: true
     preview-links: true
+    scrollable: true
 editor: visual
 ---
 
@@ -19,13 +19,41 @@ Build a reproducible script for differential gene expression (DGE) analysis of *
 
 [![M. capitata development diagram by A. Huffmyer](https://user-images.githubusercontent.com/32178010/211181816-cf21abb7-7038-4f86-9aca-3ca326a958ce.png)](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics)
 
+[AHuffmyer/EarlyLifeHistory_Energetics](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics)
+
+## Borrowed Data
+
+::: columns
+::: {.column width="50%"}
+Embryos
+
+-   SRR22293447
+-   SRR22293448
+-   SRR22293449
+-   SRR22293450
+:::
+
+::: {.column width="50%"}
+Attached Recruits
+
+-   SRR22293451
+-   SRR22293452
+-   SRR22293453
+-   SRR22293454
+:::
+:::
+
 ## Methods
 
 *What I need to do...*
 
+-   Create `HISAT2` index with the reference genome
+
 -   Transcript Quantification (Alignment) with `HISAT2`
 
 -   Differential Expression Analysis `HISAT2`& `DESeq2`
+
+-   BLAST with GO terms
 
 ## But I got confused and used kallisto
 
@@ -52,7 +80,7 @@ countmatrix <- round(countmatrix, 0)
 head(countmatrix)
 ```
 
-## DESeq Negative Binomial
+## DESeq Fits Count Matrix to Negative Binomial
 
 ```{r}
 # make a dataframe 
@@ -70,27 +98,16 @@ deseq2.dds <- DESeqDataSetFromMatrix(countData = countmatrix,
 
 The `DESeqDataSet` object, named `deseq.dds`, is then passed to the `DESeq()` function to fit a negative binomial model and estimate dispersions.
 
-```{r, echo=TRUE}
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+#| code-line-numbers: "|1|2"
 deseq2.dds <- DESeq(deseq2.dds)
 deseq2.res <- results(deseq2.dds)
 deseq2.res <- deseq2.res[order(rownames(deseq2.res)), ]
-```
-
-```{r}
-str(deseq2.res)
+head(deseq2.res)
 ```
 
 ```{r}
 dim(deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ])
-```
-
-# Plotting
-
-## PCA
-
-```{r}
-vsd <- vst(deseq2.dds, blind = FALSE)
-plotPCA(vsd, intgroup = "condition")
 ```
 
 ## Heatmap
@@ -165,39 +182,31 @@ print(volcano_plot)
 
 ## Next Steps
 
-Week06
-
--   Go back and rebuild index file using `HISAT2` & align reads
-
-Week07
-
--   Run Differential Expression Analysis using `HISAT2`& `DESeq2`
-
-Week08
-
--   Debug all the inevitable mistakes
-
--   Clean up scripts, add helpful tips
-
-Week09-10 If there's time...
-
--   Go back and build scripts to work with raw sequence data:
-
-    -   Quality control with `FastQC` or `MultiQC`
-
-    -   Trim & Clean with `fastp` or `trimgalore`
-
-    -   Quality control trimmed sequences
++-----------+---------------------------------------------------------------+
+| week      | to-do                                                         |
++===========+===============================================================+
+| week06    | Go back and rebuild index file using `HISAT2` & align reads   |
++-----------+---------------------------------------------------------------+
+| week07    | Run Differential Expression Analysis using `HISAT2`& `DESeq2` |
++-----------+---------------------------------------------------------------+
+| week08    | BLAST GO terms, what are these DEG's?                         |
++-----------+---------------------------------------------------------------+
+| week09/10 | Go back and build scripts to work with raw sequence data:     |
+|           |                                                               |
+|           | -   Quality control with `FastQC` or `MultiQC`                |
+|           | -   Trim & Clean with `fastp` or `trimgalore`                 |
+|           | -   Quality control trimmed sequences                         |
++-----------+---------------------------------------------------------------+
 
 ## Currently stuck on...
 
-Create HISAT2 index for the reference genome hisat2-build path/to/reference_genome.fasta path/to/hisat2_index/genome
+Creating HISAT2 index with the reference genome
 
-```{r, engine='bash', eval=FALSE, echo=TRUE}
-#| code-line-numbers: 4
+```{r, eval=FALSE, echo=TRUE}
+#| code-line-numbers: "|1|2|3"
 /home/shared/hisat2-2.2.1/hisat2-build \
 -f ../data/Montipora_capitata_HIv3.assembly.fasta \
 ../output/Mcapv3.index
 ```
 
-![](images/Mcapv3index.png)
+![](images/Mcapv3index.png){fig-align="center" width="50%"}
