@@ -28,6 +28,7 @@ housed
   DESeq2 differential gene expression analysis using dubious kallisto count matrix
 
 #### 06-go-blast
-  In progress, how do I 'blast' this thing?
+Functional enrichment of WGCNA modules produced in `WGCNA_Mcap.Rmd` script for the *Montipora capitata* 2020 developmental time series.  This script uses the V3 genome from Cyanophora Rutgers.  
+
 
 week05-presentation is published using Rpubs and can be found [HERE](http://rpubs.com/sarah_tanja/1034364).
