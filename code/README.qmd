@@ -1,13 +1,15 @@
 ---
-editor: 
-  markdown: 
-    wrap: 72
+title: "README"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"  
+format:
+  gfm: default
 ---
 
-# Differential Gene Expression Analysis
+# Differential Gene Expression Analysis Code Folder
 
 ::: callout-important
-**Pre-reqs:** This code contains relative paths that only work within
+**Pre-reqs:** This code folder contains relative paths that only work within
 the *raven* Roberts' Lab Server, where the data for this assignment is
 housed
 :::
@@ -27,8 +29,8 @@ housed
 #### 05-DESeq2
   DESeq2 differential gene expression analysis using dubious kallisto count matrix
 
-#### 06-go-blast
-Functional enrichment of WGCNA modules produced in `WGCNA_Mcap.Rmd` script for the *Montipora capitata* 2020 developmental time series.  This script uses the V3 genome from Cyanophora Rutgers.  
+#### 06-GOSeq-enrichment
+Functional enrichment of WGCNA (Weighted Gene Co-expression Network Analysis) modules produced in `WGCNA_Mcap.Rmd` script for the *Montipora capitata* 2020 developmental time series.  This script uses the V3 genome from Cyanophora Rutgers.  
 
 
 week05-presentation is published using Rpubs and can be found [HERE](http://rpubs.com/sarah_tanja/1034364).

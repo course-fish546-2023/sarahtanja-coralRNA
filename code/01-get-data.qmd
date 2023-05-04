@@ -227,8 +227,9 @@ gunzip Montipora_capitata_HIv3.genes_fixed.gff3.gz
 gunzip Montipora_capitata_HIv3.assembly.fasta.gz
 ```
 
+
 So we now have the sample sequence files located at absolute path `/home/shared/8TB_HDD_01/mcap/` And we have the reference genome V3 files located at `../data/`
 
 ::: callout-info
-**Next Step:** Go to `02-hisat` to align reads to the reference genome using RNAseq aligner HISAT2
+**Next Step:** Go to `02-HISAT2-genome-align` to align reads to the reference genome using RNAseq aligner HISAT2
 :::
