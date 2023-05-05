@@ -1,3 +1,11 @@
+---
+title: "README"
+author: "Sarah Tanja"
+date: "first written: 4/10/2023"  
+date: "last updated: `r format(Sys.time(), '%d %B, %Y')`"
+---
+
+
 README
 ================
 Sarah Tanja
@@ -5,7 +13,6 @@ Sarah Tanja
 
 # Differential Gene Expression Analysis Code Folder
 
-<div>
 
 > **Important**
 >
@@ -13,7 +20,6 @@ Sarah Tanja
 > within the *raven* Roberts’ Lab Server, where the data for this
 > assignment is housed
 
-</div>
 
 #### 00-set-hooks
 
