@@ -1,15 +1,8 @@
----
-title: "README"
-author: "Sarah Tanja"
-date: "first written: 4/10/2023"  
-date: "last updated: `r format(Sys.time(), '%d %B, %Y')`"
----
-
-
 README
-================
 Sarah Tanja
-5/4/23
+last updated: `r format(Sys.time(), '%d %B, %Y')`
+================
+
 
 # Differential Gene Expression Analysis Code Folder
 

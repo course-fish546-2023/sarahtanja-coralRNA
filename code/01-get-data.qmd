@@ -19,17 +19,6 @@ format:
       light: sandstone
       dark: vapor
 ---
-
-Environment pre-reqs:
-
--   sequence data files deposited on NCBI
--   code and commentary written in Quarto
--   operating within RStudio on a Unix OS (Roberts Lab raven server)
--   file structure:
-    -   code
-    -   data
-    -   output
-
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(
@@ -46,6 +35,19 @@ knitr::opts_chunk$set(
 options(stringsAsFactors = FALSE) #Set Strings to character
 
 ```
+# Downloading RNA sequence files 
+
+Goals:
+- Identify samples (accession numbers) I want to analyze in SRA Run Selector 
+- `curl` sample RNA sequences data files (.fastq) from NCBI BioProject into a large storage drive
+- Check the files for integrity using `md5sum`
+
+
+Environment:
+
+- RStudio Server hosted on a Unix OS (Roberts Lab raven server)
+
+
 
 ## Install Packages
 
