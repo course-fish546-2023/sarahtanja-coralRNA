@@ -12,22 +12,43 @@ the *raven* Roberts' Lab Server, where the data for this assignment is
 housed
 :::
 
-#### 00-set-hooks
-  This follows the instruction on how to automatically ignore large files from [THIS COURSE TUTORIAL](https://sr320.github.io/course-fish546-2023/assignments/02-DGE.html) , but there has to be a better way. It doesn't seem to work consistently. You may have to execute a line of code everytime you re-start your environment? Or something? Not fool-proof. 
+#### 00-git-ignore
+
+This follows the instruction on how to automatically ignore large files
+from [THIS COURSE
+TUTORIAL](https://sr320.github.io/course-fish546-2023/assignments/02-DGE.html)
+, manually execute a bash terminal command to find and add files \>1G
+from repo to .gitignore
+`find . -size +1G | sed 's|^./||g' | cat >> .gitignore` from
+[THIS](https://github.com/sr320/course-fish546-2015/issues/43) Robert's
+Lab Course Issue, and how to undo a commit that had a file in it which
+was too large.
 
 #### 01-get-data
-  Where TagSeq sample sequence fasta files from NCBI are downloaded and the Rutgers *Montipora capitata* reference genome V3 is downloaded
+
+Where TagSeq sample sequence fasta files from NCBI are downloaded and
+the Rutgers *Montipora capitata* reference genome V3 is downloaded
 
 #### 02-align-hisat
-  In-progress alignment of sample sequences to reference genome using HISAT
-  
+
+In-progress alignment of sample sequences to a reference genome using
+HISAT
+
 #### 04-create-kallisto-index
-   Alignment of sample sequences to reference index using kallisto, however possibly not the appropriate tool, as kallisto is a 'pseudo-aligner' and HISAT should be used for organisms that have an annotated genome. Count matrix generated, but don't trust it?
+
+Alignment of sample sequences to reference index using kallisto, however
+possibly not the appropriate tool, as kallisto is a 'pseudo-aligner' and
+HISAT should be used for organisms that have an annotated genome. Count
+matrix generated, but don't trust it?
 
 #### 05-DESeq2
-  DESeq2 differential gene expression analysis using dubious kallisto count matrix
+
+DESeq2 differential gene expression analysis using dubious kallisto
+count matrix
 
 #### 06-go-blast
-  In progress, how do I 'blast' this thing?
 
-week05-presentation is published using Rpubs and can be found [HERE](http://rpubs.com/sarah_tanja/1034364).
+In progress, how do I 'blast' this thing?
+
+week05-presentation is published using Rpubs and can be found
+[HERE](http://rpubs.com/sarah_tanja/1034364).

@@ -1,0 +1,241 @@
+---
+title: "02-align-hisat"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`" 
+editor: visual
+format:
+  gfm: default
+  html:
+    df-print: paged
+    toc: true
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: arrow
+    code-overflow: wrap
+    theme:
+      light: sandstone
+      dark: vapor
+---
+
+# Build Index
+
+Do I use assembly.fasta file?
+
+```{r, engine='bash'}
+/home/shared/hisat2-2.2.1/hisat2-build \
+-f ../data/Montipora_capitata_HIv3.assembly.fasta \
+../output/Mcapv3_assembly.index
+```
+
+Or cds.fna file?
+
+CDS coding sequences .fna denotes FASTA Nucleotides file
+
+```{r, engine='bash'}
+/home/shared/hisat2-2.2.1/hisat2-build \
+-f ../data/Montipora_capitata_HIv3.genes.cds.fna \
+../output/Mcapv3_cds.index
+```
+
+Both result in multiple index files, numbered 1-8!? I was expecting one...
+
+# Perform Alignment
+
+Align with HISAT? But I don't have paired reads...
+
+```{r, engine= 'bash'}
+/home/shared/hisat2-2.2.1/hisat2 \
+-x /home/shared/8TB_HDD_02/cvaldi/celeste-tunicate-devo/output/GCA_000444245.1_356a-valid.index \
+-1 /home/shared/8TB_HDD_01/cvaldi/tunicate-fish546/raw/SRR10352205_1.fastq   \
+-2 /home/shared/8TB_HDD_01/cvaldi/tunicate-fish546/raw/SRR10352205_2.fastq \
+-S ../output/SRR10352205.sam \
+--threads 7 
+
+```
+
+OR Align using stringtie? I can't pick apart this code yet to customize it for my file directory...
+
+```{r, engine='bash'}
+# This script exports alignments as bam files
+# sorts the bam file because Stringtie takes a sorted file for input (--dta)
+# removes the sam file because it is no longer needed
+array=($(ls clean*)) # call the clean sequences - make an array to align
+for i in ${array[@]}; do
+        sample_name=`echo $i| awk -F [.] '{print $2}'`
+	hisat2 -p 8 --dta -x Mcapv3 -U ${i} -S ${sample_name}.sam
+        samtools sort -@ 8 -o ${sample_name}.bam ${sample_name}.sam
+    		echo "${i} bam-ified!"
+        rm ${sample_name}.sam
+```
+
+# Align RNA-seq reads using HISAT2
+
+hisat2 -x path/to/hisat2_index/genome\
+-1 path/to/read1.fastq.gz\
+-2 path/to/read2.fastq.gz\
+-S output.sam\
+--threads num_threads
+
+```{r, engine='bash'}
+/home/shared/hisat2-2.2.1/hisat2 \
+-x ../output/Mcapv3.index \
+-p 2 \
+-1 /home/shared/8TB_HDD_01/mcap/5010/exp01/5010_4_S4_L003_R1_001.fastq.gz \
+-2 /home/shared/8TB_HDD_01/snow_crab/5010/exp01/5010_4_S4_L003_R2_001.fastq.gz \
+-S ../output/rhil.sam
+```
+
+# Convert SAM file to sorted BAM file
+
+samtools view -bS output.sam \| samtools sort -o output_sorted.bam
+
+```{bash}
+/home/shared/samtools-1.12/samtools \
+view -bS ../output/Mcap.sam | \
+/home/shared/samtools-1.12/samtools sort \
+-o ../output/output_sorted.bam
+```
+
+## Or Use cloud computing?
+
+## Connect to Hyak-Mox
+
+![](images/mox-hyak.png)
+
+-   In a unix `Terminal` type "`ssh stanja@mox.hyak.uw.edu`"
+
+-   Enter UW NetID Password
+
+-   Use Duo Mobile App to Push login approval
+
+## Make a directory
+
+Once logged into mox, navigate to `/gscratch/scrubbed/your-username`.
+
+`cd /gscratch/scrubbed/stanja`
+
+If the dir is not there you shoud create it. For every job you submit I recommend working within a directory.
+
+`mkdir hisat`
+
+## Generate a shell script
+
+Create a shell script in your code directory named hisat-job.sh with contents:
+
+```{r}
+#!/bin/bash
+## Job Name
+#SBATCH --job-name=assign4
+## Allocation Definition
+#SBATCH --account=srlab
+#SBATCH --partition=srlab
+## Resources
+## Nodes
+#SBATCH --nodes=1
+## Walltime (days-hours:minutes:seconds format)
+#SBATCH --time=01-08:00:00
+## Memory per node
+#SBATCH --mem=100G
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=stanja@uw.edu
+## Specify the working directory for this job
+#SBATCH --chdir=/gscratch/scrubbed/stanja/assign_04
+
+# for rsync
+# run the following in the Rterminal, while connected to mox:
+ rsync -avz assignments/code/04-* stanja@mox.hyak.uw.edu:/gscratch/scrubbed/stanja/assign_04
+
+# for scp
+# run the following in the Rterminal, while connected to mox:
+# scp assignments/code/04-* stanja@mox.hyak.uw.edu:/gscratch/scrubbed/stanja/assign_04
+
+# type the following to schedule the job
+# sbatch 04-job-sh
+
+# Then on mox, inside the assign_04 directory you will type”
+
+# sbatch 04-job-sh to schedule the job.
+
+# Once done you should have a couple of new files in the directory.
+
+# You will want to check them to see if everything worked and then move the output back to your repo…
+
+# rsync -avz stanja@mox.hyak.uw.edu:/gscratch/scrubbed/stanja/assign_04/ 
+
+#run a python script you wrote!
+module load intel-python3_2017
+
+python 04-hello.py
+
+# run blastx just to get manual
+/gscratch/srlab/programs/ncbi-blast-2.10.1+/bin/blastx -help
+
+#a few bash commands
+pwd 
+
+whoami
+
+echo "yeah! I did it!!!!!!!!!!"
+
+#this writes out  tofile
+echo "yeah! I did it!!!!!!!!!!" > text.file
+```
+
+## rsync
+
+run the following in the Rterminal, while connected to mox:
+
+`rsync -avz code/hisat* stanja@mox.hyak.uw.edu:/gscratch/scrubbed/stanja/hisat`
+
+## scp
+
+run the following in the Rterminal, while connected to mox:
+
+`scp assignments/code/04-* stanja@mox.hyak.uw.edu:/gscratch/scrubbed/stanja/assign_04`
+
+```{r}
+#!/bin/bash
+## Hisat Test
+#SBATCH --job-name=hisattest
+## Allocation Definition
+#SBATCH --account=srlab
+#SBATCH --partition=srlab
+## Resources
+## Nodes
+#SBATCH --nodes=1
+## Walltime (days-hours:minutes:seconds format)
+#SBATCH --time=01-08:00:00
+## Memory per node
+#SBATCH --mem=100G
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=stanja@uw.edu
+## Specify the working directory for this job
+#SBATCH --chdir=/gscratch/scrubbed/stanja/assign_04
+
+# load modules needed
+module load HISAT2/2.2.1-foss-2019b
+module load SAMtools/1.9-foss-2018b
+
+#unzip reference genome
+#gunzip Montipora_capitata_HIv3.assembly.fasta.gz
+
+# index the reference genome for Montipora capitata output index to working directory
+hisat2-build -f /home/shared/8TB_HDD_02/sarahtanja/sarahtanja-coralRNA/data/Montipora_capitata_HIv3.assembly.fasta ./Mcapitata_ref_v3 # called the reference genome (scaffolds)
+echo "Referece genome indexed. Starting alignment" $(date)
+
+# This script exports alignments as bam files
+# sorts the bam file because Stringtie takes a sorted file for input (--dta)
+# removes the sam file because it is no longer needed
+array=($(ls clean*)) # call the clean sequences - make an array to align
+for i in ${array[@]}; do
+        sample_name=`echo $i| awk -F [.] '{print $2}'`
+	hisat2 -p 8 --dta -x Mcapitata_ref_v3 -U ${i} -S ${sample_name}.sam
+        samtools sort -@ 8 -o ${sample_name}.bam ${sample_name}.sam
+    		echo "${i} bam-ified!"
+        rm ${sample_name}.sam
+done
+```
