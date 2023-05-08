@@ -1,6 +1,4 @@
 README
-Sarah Tanja
-last updated: `r format(Sys.time(), '%d %B, %Y')`
 ================
 
 

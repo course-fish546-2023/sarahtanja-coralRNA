@@ -21,39 +21,87 @@ format:
       dark: vapor
 ---
 
-# Build Index
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, warning = FALSE, message = FALSE)
+```
+## Overview
 
-Do I use assembly.fasta file?
 
+- sample sequence files located at absolute path `/home/shared/8TB_HDD_01/mcap/` 
+- reference genome V3 files located at `../data/`
+
+
+Look at the GFF (generic feature format) genomic annotation files and the FASTA genome file
+```{r, engine='bash'}
+cd ../data
+tail -n 10 Montipora_capitata_HIv3.genes.gff3
+tail -n 10 Montipora_capitata_HIv3.genes_fixed.gff3
+tail -n 10 Montipora_capitata_HIv3.assembly.fasta
+```
+
+## Build an index file from the reference genome with HISAT2
+
+::: callout-info title="ChatGPT Info on 'Indexing with HISAT2'"
+An index file built from a genome is a data structure that enables fast searching and retrieval of information from the genome. Here we use `HISAT2` to break down the genome into smaller fragments and build an index file that stores the location and sequence of these fragments. This index file is created using a reference genome as a template.
+
+HISAT2 (Hierarchical Indexing for Spliced Alignment of Transcripts 2) is a popular RNA-seq aligner that uses a type of index file called a Hierarchical Graph FM Index (HGFM).
+
+The HGFM index is an extension of the FM-index data structure that is used in many other aligners such as Bowtie, BWA, and HISAT. The HGFM index builds on the FM-index by adding a hierarchical structure that allows for more efficient searching of splice junctions in RNA-seq data.
+
+In HISAT2, the HGFM index is constructed from a reference genome and a gene annotation file, which together define the locations of splice junctions. The HGFM index stores a hierarchical graph of the reference genome that includes both the exonic and intronic regions, along with the splice junctions between them. This allows HISAT2 to align RNA-seq reads across splice junctions with high sensitivity and accuracy.
+
+Overall, the HGFM index used by HISAT2 is optimized for aligning RNA-seq reads, which have unique challenges compared to genomic DNA sequencing. By incorporating splice junction information into the index, HISAT2 can accurately align RNA-seq reads to the genome and help identify gene expression and alternative splicing events.
+:::
+
+When using HISAT2's hisat2-build command to build an index from a genome, the input file should be a FASTA file containing the reference genome sequence. in this case, `Montipora_capitata_HIv3.assembly.fasta`. The `-f` option soecifies the input is a fasta file (which can come in the fasta, fna, or fa file extension format. We then title and create an index `Mcapv3_assembly.index`  which is stored into the output folder.
 ```{r, engine='bash'}
 /home/shared/hisat2-2.2.1/hisat2-build \
 -f ../data/Montipora_capitata_HIv3.assembly.fasta \
 ../output/Mcapv3_assembly.index
 ```
 
-Or cds.fna file?
-
-CDS coding sequences .fna denotes FASTA Nucleotides file
-
+Or should I use the cds.fna file to build the index?
+CDS coding sequences .fna denotes FASTA Nucleotides file...
+Build index with cds.fna as well... 
 ```{r, engine='bash'}
 /home/shared/hisat2-2.2.1/hisat2-build \
 -f ../data/Montipora_capitata_HIv3.genes.cds.fna \
 ../output/Mcapv3_cds.index
 ```
 
-Both result in multiple index files, numbered 1-8!? I was expecting one...
+# Perform Alignment to Index (making SAM files)
 
-# Perform Alignment
+```
+```{r, engine='bash'}
+hisat2 -x path/to/hisat2_index/genome\
+-U path/to/read1.fastq\
+-S output.sam\
+--threads num_threads
+```
+```
 
-Align with HISAT? But I don't have paired reads...
+- specify the path to the single-end fastq file with the -U option
 
-```{r, engine= 'bash'}
-/home/shared/hisat2-2.2.1/hisat2 \
--x /home/shared/8TB_HDD_02/cvaldi/celeste-tunicate-devo/output/GCA_000444245.1_356a-valid.index \
--1 /home/shared/8TB_HDD_01/cvaldi/tunicate-fish546/raw/SRR10352205_1.fastq   \
--2 /home/shared/8TB_HDD_01/cvaldi/tunicate-fish546/raw/SRR10352205_2.fastq \
--S ../output/SRR10352205.sam \
---threads 7 
+```{r, engine='bash'}
+# Set input and output directories
+input_dir=/home/shared/8TB_HDD_01/mcap
+output_dir=../output
+
+# Set Hisat2 options
+hisat2_options="-x /home/shared/8TB_HDD_02/stanja/sarahtanja/sarahtanja-coralRNA/output/Mcapv3_assembly.index --threads 7"
+
+# Loop through fastq files in input directory
+for f in ${input_dir}/*; do
+    # Get base filename
+    base=$(basename ${f} .fastq)
+    
+    # Align with Hisat2
+    /home/shared/hisat2-2.2.1/hisat2 \
+    ${hisat2_options} \
+    -U ${f} \
+    -S ${output_dir}/${base}.sam \
+    
+done
 
 ```
 
@@ -62,32 +110,20 @@ OR Align using stringtie? I can't pick apart this code yet to customize it for m
 ```{r, engine='bash'}
 # This script exports alignments as bam files
 # sorts the bam file because Stringtie takes a sorted file for input (--dta)
-# removes the sam file because it is no longer needed
 array=($(ls clean*)) # call the clean sequences - make an array to align
 for i in ${array[@]}; do
         sample_name=`echo $i| awk -F [.] '{print $2}'`
+        
 	hisat2 -p 8 --dta -x Mcapv3 -U ${i} -S ${sample_name}.sam
         samtools sort -@ 8 -o ${sample_name}.bam ${sample_name}.sam
     		echo "${i} bam-ified!"
-        rm ${sample_name}.sam
+        rm ${sample_name}.sam # removes the sam file because it is no longer needed
 ```
 
 # Align RNA-seq reads using HISAT2
 
-hisat2 -x path/to/hisat2_index/genome\
--1 path/to/read1.fastq.gz\
--2 path/to/read2.fastq.gz\
--S output.sam\
---threads num_threads
 
-```{r, engine='bash'}
-/home/shared/hisat2-2.2.1/hisat2 \
--x ../output/Mcapv3.index \
--p 2 \
--1 /home/shared/8TB_HDD_01/mcap/5010/exp01/5010_4_S4_L003_R1_001.fastq.gz \
--2 /home/shared/8TB_HDD_01/snow_crab/5010/exp01/5010_4_S4_L003_R2_001.fastq.gz \
--S ../output/rhil.sam
-```
+
 
 # Convert SAM file to sorted BAM file
 
