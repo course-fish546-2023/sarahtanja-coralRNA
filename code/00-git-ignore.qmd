@@ -1,5 +1,6 @@
 ---
-title: "Set Hooks"
+title: "Working with Large Files in Git"
+subtitle: "set hooks and use .gitignore"
 author: "Sarah Tanja"
 date: "`r format(Sys.time(), '%d %B, %Y')`"  
 format:
@@ -69,7 +70,7 @@ With these changes, whenever you run a git commit command, Git will first execut
 
 Use the following code as a bash terminal command to find and add files \>1G from repo to .gitignore `find . -size +1G | sed 's|^./||g' | cat >> .gitignore` from [THIS](https://github.com/sr320/course-fish546-2015/issues/43) Robert's Lab Course Issue
 
-## Burn it down 
+## Burn it down
 
 > In the event that you accidentally committed a big file (\>100MB), you can reset to the last successful git master branch push
 

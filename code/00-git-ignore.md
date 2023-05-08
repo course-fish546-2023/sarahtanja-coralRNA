@@ -1,7 +1,7 @@
-Set Hooks
+Working with Large Files in Git
 ================
 Sarah Tanja
-5/4/23
+5/8/23
 
 ## Setup git hooks to automatically gitignore large files
 
@@ -36,7 +36,7 @@ the specified max_file_size. The exec option of the find command appends
 the name of each file that matches the criteria to the .gitignore file.
 
 Save the pre-commit file and make it executable by running the following
-command in Terminal:
+command in Terminal from your base git directory:
 
 ``` bash
 pwd
@@ -48,6 +48,16 @@ With these changes, whenever you run a git commit command, Git will
 first execute the pre-commit hook, which will automatically add any
 files larger than 100 MB to the .gitignore file. This will prevent Git
 from tracking these files in the repository going forward.
+
+## Manually execute code to find and add files \>1G to .gitignore before committing
+
+Use the following code as a bash terminal command to find and add files
+\>1G from repo to .gitignore
+`find . -size +1G | sed 's|^./||g' | cat >> .gitignore` from
+[THIS](https://github.com/sr320/course-fish546-2015/issues/43) Robert’s
+Lab Course Issue
+
+## Burn it down
 
 > In the event that you accidentally committed a big file (\>100MB), you
 > can reset to the last successful git master branch push
