@@ -1,0 +1,220 @@
+---
+title: "02-HISAT2-genome-align"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"  
+format:
+  gfm: default
+  html:
+    df-print: paged
+    toc: true
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: arrow
+    code-overflow: wrap
+    theme:
+      light: sandstone
+      dark: vapor
+---
+
+## 1. Accessing genome
+For this workflow, we will use the assembled genome of [*Montipora capitata*](https://elifesciences.org/articles/00569) as a reference when quantifying the transcripts of the samples.
+
+Curling the *Montipora capitata* genome assembly. 
+```{r, engine= 'bash'}
+cd ../data
+curl --insecure -O https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/444/245/GCA_000444245.1_356a-chromosome-assembly/GCA_000444245.1_356a-chromosome-assembly_genomic.fna.gz
+
+# unzipping file
+gzip -d GCA_000444245.1_356a-chromosome-assembly_genomic.fna.gz
+```
+
+## 2. Accessing annotated genome
+Downloading the **complete** annotated genome from the [*Botryllus schlosseri* Genome Project](http://botryllus.stanford.edu/botryllusgenome/download/):
+```{r, engine = 'bash'}
+cd ../data
+curl --insecure -O http://botryllus.stanford.edu/botryllusgenome/download/botznik-chr-ctg.gff
+```
+
+Taking a peak at the annotated genome:
+```{bash}
+cd ../data/genome-alignment
+tail -n 70 botznik-chr-all.gff
+```
+When running through workflow, particularly at the development of gtf files, it says that this is not a valid reference gff. Below I will curl a different gff from the same server. I tried all the gff's from this server and none of them produce exon and splice site tabs or are convertable into gtf files with string tie.
+
+```{r, engine = 'bash'}
+cd ../data/genome-alignment
+curl --insecure -O http://botryllus.stanford.edu/botryllusgenome/download/botznik-chr-ctg.gff
+```
+
+
+## 3. Build an index file from the reference genome with HISat2
+We will be aligning our sequence reads to the reference genome.
+
+The below command takes the path to the HISAT2 executable.
+Then with -f option we specify that the input is a fasta file (which can come in the fasta, fna, or fa file extension format).
+
+We then title and create an index which is stored into the output folder. If you don't have an output folder in your working directory already, add one before running the below code.
+
+GTF files typically include information about gene structures, such as the locations of exons, introns, and other features, and are commonly used for genome annotation and RNAseq analysis. 
+
+
+```{bash}
+# Create Hisat2 exons tab file
+/home/shared/hisat2-2.2.1/hisat2_extract_exons.py \
+../data/genome-alignment/botznik-chr-all.gff \
+> ../output/botznik-chr-all-exons.tab
+
+# Create Hisat2 splice sites tab file
+/home/shared/hisat2-2.2.1/hisat2_extract_splice_sites.py \
+../data/genome-alignment/botznik-chr-all.gff \
+> ../output/botznik-chr-all-splice-sites.tab
+```
+
+```{r, engine='bash'}
+# Build Hisat2 reference index using splice sites and exons
+/home/shared/hisat2-2.2.1/hisat2-build \
+-f ../data/genome-alignment/GCA_000444245.1_356a-chromosome-assembly_genomic.fna \
+../output/GCA_000444245.1_356a-annote.index \
+--exon ../output/botznik-chr-all-exons.tab \
+--ss ../output/botznik-chr-all-splice-sites.tab \
+-p 7 \
+2> hisat2-build_stats.txt
+```
+
+## 4. Iterative alignment to index (making SAM files)
+
+The below code chunk will align each pair of my RNAseq files to the reference index we created in the last step using hisat2. 
+
+```{r, engine='bash'}
+# Set input and output directories
+input_dir=/home/shared/8TB_HDD_01/cvaldi/tunicate-fish546/raw
+output_dir=../output
+
+# Set Hisat2 options
+hisat2_options="-x /home/shared/8TB_HDD_02/cvaldi/celeste-tunicate-devo/output/GCA_000444245.1_356a-annote.index --threads 7"
+
+# Loop through fastq files in input directory
+for f in ${input_dir}/*_1.fastq; do
+    # Get base filename
+    base=$(basename ${f} _1.fastq)
+    
+    # Align with Hisat2
+    /home/shared/hisat2-2.2.1/hisat2 \
+    ${hisat2_options} \
+    -1 ${f} \
+    -2 ${input_dir}/${base}_2.fastq \
+    -S ${output_dir}/${base}.sam \
+    
+done
+
+```
+
+
+
+
+## 5. Iteratively make sorted.BAM files from SAM files 
+
+The following code chunk will iterateively take all sam files in the output directory and convert them to bam files.
+```{r, engine='bash'}
+#!/bin/bash
+
+# Directory containing SAM files
+sam_dir="../output/"
+
+# Iterate over all SAM files in the directory
+for sam_file in ${sam_dir}*.sam
+do
+    # Generate output file names
+    base_name=$(basename ${sam_file} .sam)
+    bam_file="${sam_dir}${base_name}.sorted.bam"
+    index_file="${bam_file}.bai"
+
+    # Convert SAM to BAM and sort
+    /home/shared/samtools-1.12/samtools view \
+    -@ 7 \
+    -Su ${sam_file} \
+    | /home/shared/samtools-1.12/samtools sort - \
+    -@ 7 \
+    -o ${bam_file}
+
+    # Index BAM file
+    /home/shared/samtools-1.12/samtools index ${bam_file}
+done
+
+```
+
+Cleaning up the output directory since those sam files are pretty large and taking up space.
+```{r, engine = 'bash'}
+# Delete unnecessary index files
+rm GCA_000444245.1_356a-valid*.ht2
+
+# Delete unneeded SAM files
+rm ./*.sam
+```
+
+
+
+
+```{r, engine = 'bash'}
+rm ./ *.ht2
+rm ./*.sam
+```
+
+## 6. Generating a reference transcriptome annotation to input into trinity?
+I can't make abundance estimates until I have gtf it seems. Here is an example of the code chunk that ChatGPT spit out for me. 
+
+```{r, engine='bash'}
+ #!/bin/bash
+
+# Set input and output directories
+input_dir=../output
+output_dir=../output/stringtie
+
+# Loop through the sorted BAM files in input directory
+for f in ${input_dir}/*.sorted.bam; do
+    # Get base filename
+    base=$(basename ${f} .sorted.bam)
+
+    # Run StringTie to estimate transcript abundances, botznik gff not accepted as a valid reference transcript... :(
+    /home/shared/stringtie-2.2.1.Linux_x86_64/stringtie \
+    ${input_dir}/${base}.sorted.bam \
+    -G ../data/genome-alignment/botznik-chr-all.gff \
+    -o ${output_dir}/${base}.gtf \
+    -p 7
+
+done
+
+# Merge GTF files with StringTie
+/home/shared/stringtie-2.2.1.Linux_x86_64/stringtie \
+--merge ${output_dir}/mergelist.txt \
+-G ../data/botznik-chr-ctg.gff \
+-o ${output_dir}/merged.gtf \
+-p 7
+
+```
+
+## 7. Quantifying gene expression levels
+
+We will now create transcript abundance estimates from the sorted BAM files we just generated.
+
+For this we will use the "align_and_estimate_abundance.pl" script included with Trinity.
+
+
+```{bash}
+perl /home/shared/trinityrnaseq-v2.12.0/util/align_and_estimate_abundance.pl \
+--transcripts ../data/genome-alignmentbotznik-chr-all.gff \
+--seqType sam \
+--left reads_1.fq \
+--right reads_2.fq \
+--est_method RSEM \
+--aln_method bowtie2 \
+--prep_reference \
+--thread_count 4 \
+--output_dir output_dir
+
+```

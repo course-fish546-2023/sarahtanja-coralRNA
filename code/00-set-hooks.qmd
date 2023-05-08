@@ -3,6 +3,7 @@ title: "Set Hooks"
 author: "Sarah Tanja"
 date: "`r format(Sys.time(), '%d %B, %Y')`"  
 format:
+  gfm: default
   html:
     df-print: paged
     toc: true
@@ -17,7 +18,6 @@ format:
     theme:
       light: sandstone
       dark: vapor
-  gfm: default
 ---
 
 ```{r setup, include=FALSE}

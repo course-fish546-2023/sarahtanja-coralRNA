@@ -1,5 +1,5 @@
 ---
-title: "04-kallisto"
+title: "02-kallisto-pseudo-align"
 format:
   html:
     df-print: paged

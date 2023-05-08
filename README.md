@@ -1,4 +1,10 @@
-# sarahtanja-coralRNA
+README
+Sarah Tanja
+last updated: `r format(Sys.time(), '%d %B, %Y')`
+================
+
+
+# sarahtanja-coralRNA Repository 
 
 This repository is for a differential gene expression (DGE) workflow for a multiple stressor treatment experiment on *Montipora capitata* corals. In this repo I will be using 'fake data' from [Ariana Huffmyer's](https://github.com/AHuffmyer) [EarlyLifeHistory_Energetics](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics) repository as a placeholder until I get RNAseq data from my own experiment.
 
