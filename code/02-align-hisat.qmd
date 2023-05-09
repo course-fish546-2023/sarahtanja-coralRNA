@@ -66,7 +66,7 @@ Build index with cds.fna as well...
 ```{r, engine='bash'}
 /home/shared/hisat2-2.2.1/hisat2-build \
 -f ../data/Montipora_capitata_HIv3.genes.cds.fna \
-../output/Mcapv3_cds.index
+../output/index/Mcapv3_cds.index
 ```
 
 # Align to Index (making SAM files)
@@ -141,7 +141,6 @@ done
 I can't make abundance estimates until I have gtf it seems. Here is an example of the code chunk that ChatGPT spit out for me. 
 
 ```{r, engine='bash'}
- #!/bin/bash
 
 # Set input and output directories
 input_dir=../output
@@ -152,23 +151,81 @@ for f in ${input_dir}/*.sorted.bam; do
     # Get base filename
     base=$(basename ${f} .sorted.bam)
 
-    # Run StringTie to estimate transcript abundances, botznik gff not accepted as a valid reference transcript... :(
+    # Run StringTie to estimate transcript abundance transcript.
     /home/shared/stringtie-2.2.1.Linux_x86_64/stringtie \
     ${input_dir}/${base}.sorted.bam \
-    -G ../data/genome-alignment/botznik-chr-all.gff \
+    -G ../data/Montipora_capitata_HIv3.genes.gff3 \
     -o ${output_dir}/${base}.gtf \
     -p 7
 
 done
 
+```
+
+```{r, engine='bash'}
+
+# Set input and output directories
+input_dir=../output
+output_dir=../output/stringtie
+
 # Merge GTF files with StringTie
 /home/shared/stringtie-2.2.1.Linux_x86_64/stringtie \
---merge ${output_dir}/mergelist.txt \
--G ../data/botznik-chr-ctg.gff \
+--merge ${output_dir}/*.gtf \
+-G ../data/Montipora_capitata_HIv3.genes.gff3 \
 -o ${output_dir}/merged.gtf \
 -p 7
 
 ```
 
 
+```{r, engine='bash'}
+perl /home/shared/trinityrnaseq-v2.12.0/util/align_and_estimate_abundance.pl \
+--transcripts ../data/Montipora_capitata_HIv3.genes.gff3 \
+--seqType bam \
+--est_method RSEM \
+--aln_method bowtie2 \
+--prep_reference \
+--thread_count 8 \
+--output_dir output_dir
 
+perl abundance_estimates_to_matrix.pl \
+--est_method RSEM \
+--out_prefix gene_expression_matrix \
+--name_sample_by_basedir \
+/path/to/sample_list.txt
+
+
+```
+
+
+```{r, engine='blast'}
+perl /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl \
+--est_method kallisto \
+    --gene_trans_map none \
+    --out_prefix ../output/kallisto_01 \
+    --name_sample_by_basedir \
+    ../output/kallisto_01/D54_S145/abundance.tsv \
+    ../output/kallisto_01/D56_S136/abundance.tsv \
+    ../output/kallisto_01/D58_S144/abundance.tsv \
+    ../output/kallisto_01/M45_S140/abundance.tsv \
+    ../output/kallisto_01/M48_S137/abundance.tsv \
+    ../output/kallisto_01/M89_S138/abundance.tsv \
+    ../output/kallisto_01/D55_S146/abundance.tsv \
+    ../output/kallisto_01/D57_S143/abundance.tsv \
+    ../output/kallisto_01/D59_S142/abundance.tsv \
+    ../output/kallisto_01/M46_S141/abundance.tsv \
+    ../output/kallisto_01/M49_S139/abundance.tsv \
+    ../output/kallisto_01/M90_S147/abundance.tsv \
+    ../output/kallisto_01/N48_S194/abundance.tsv \
+    ../output/kallisto_01/N50_S187/abundance.tsv \
+    ../output/kallisto_01/N52_S184/abundance.tsv \
+    ../output/kallisto_01/N54_S193/abundance.tsv \
+    ../output/kallisto_01/N56_S192/abundance.tsv \
+    ../output/kallisto_01/N58_S195/abundance.tsv \
+    ../output/kallisto_01/N49_S185/abundance.tsv \
+    ../output/kallisto_01/N51_S186/abundance.tsv \
+    ../output/kallisto_01/N53_S188/abundance.tsv \
+    ../output/kallisto_01/N55_S190/abundance.tsv \
+    ../output/kallisto_01/N57_S191/abundance.tsv \
+    ../output/kallisto_01/N59_S189/abundance.tsv
+```  
