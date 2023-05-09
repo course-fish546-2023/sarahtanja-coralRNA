@@ -178,7 +178,14 @@ output_dir=../output/stringtie
 ```
 
 
+RSEM (RNA-Seq by Expectation-Maximization) is a software package that estimates gene and isoform expression levels from RNA sequencing data. RSEM estimates gene expression by first mapping reads to a set of candidate transcripts and then estimating transcript expression levels and simultaneously computing maximum likelihood estimates of the relative abundances of the isoforms derived from each gene. It uses an expectation-maximization (EM) algorithm to estimate the parameters of a statistical model that captures the stochastic variation inherent in RNA-seq data. RSEM's statistical model takes into account sequencing biases, fragment lengths, and the multimodality of expression levels, which can improve the accuracy of gene expression estimates compared to other methods.
+
 ```{r, engine='bash'}
+
+# Set input and output directories
+input_dir=../output
+output_dir=../output/stringtie
+
 perl /home/shared/trinityrnaseq-v2.12.0/util/align_and_estimate_abundance.pl \
 --transcripts ../data/Montipora_capitata_HIv3.genes.gff3 \
 --seqType bam \
@@ -186,14 +193,17 @@ perl /home/shared/trinityrnaseq-v2.12.0/util/align_and_estimate_abundance.pl \
 --aln_method bowtie2 \
 --prep_reference \
 --thread_count 8 \
---output_dir output_dir
+--output_dir ${output_dir}
 
-perl abundance_estimates_to_matrix.pl \
+```
+
+```{r, engine='bash'}
+
+perl /home/shared/trinityrnaseq-v2.12.0/util/align_and_estimate_abundance.pl \
 --est_method RSEM \
---out_prefix gene_expression_matrix \
+--out_prefix ../output/trinity \
 --name_sample_by_basedir \
-/path/to/sample_list.txt
-
+../output/stringtie/
 
 ```
 
