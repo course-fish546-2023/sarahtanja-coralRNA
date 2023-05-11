@@ -1,0 +1,33 @@
+---
+title: "FISH 546 - DGE Compendium"
+author: "Sarah Tanja"
+ate: "`r format(Sys.time(), '%d %B, %Y')`"  
+format:
+  gfm: default
+  html:
+    df-print: paged
+    toc: true
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: arrow
+    code-overflow: wrap
+    theme:
+      light: sandstone
+      dark: vapor
+---
+
+# Project Overview
+
+## Get Data
+
+## Align Sequences
+
+## Make Count Matrix
+
+## Identify & Visualize Differentially Expressed Genes
+
+## 

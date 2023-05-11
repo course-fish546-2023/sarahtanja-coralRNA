@@ -17,7 +17,7 @@ format:
     code-overflow: wrap
     theme:
       light: sandstone
-      dark: vapor
+      dark: darkly
 ---
 ```{r setup, include=FALSE}
 
@@ -142,7 +142,7 @@ Make sure this space has lots of storage
 # move to large data hard-drive 
 cd /home/shared/8TB_HDD_01
 # make a new directory named 'mcap', short for Montipora capitata
-mkdir mcap
+mkdir -p mcap
 ```
 
 # Download the fastq files
@@ -233,5 +233,5 @@ gunzip Montipora_capitata_HIv3.assembly.fasta.gz
 So we now have the sample sequence files located at absolute path `/home/shared/8TB_HDD_01/mcap/` And we have the reference genome V3 files located at `../data/`
 
 ::: callout-info
-**Next Step:** Go to `02-HISAT2-genome-align` to align reads to the reference genome using RNAseq aligner HISAT2
+**Next Step:** Go to `02s-pseudo-align-kallisto` to align reads to the reference genome
 :::

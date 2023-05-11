@@ -168,7 +168,7 @@ done
 input_dir=../output
 output_dir=../output/stringtie
 
-# Merge GTF files with StringTie
+# Take all the individual .gtf files and merge them with `stringtie` into a file named 'merged.gtf'
 /home/shared/stringtie-2.2.1.Linux_x86_64/stringtie \
 --merge ${output_dir}/*.gtf \
 -G ../data/Montipora_capitata_HIv3.genes.gff3 \
@@ -182,10 +182,10 @@ RSEM (RNA-Seq by Expectation-Maximization) is a software package that estimates 
 
 ```{r, engine='bash'}
 
-# Set input and output directories
-input_dir=../output
+# Set output directory
 output_dir=../output/stringtie
 
+# Use Trinity 
 perl /home/shared/trinityrnaseq-v2.12.0/util/align_and_estimate_abundance.pl \
 --transcripts ../data/Montipora_capitata_HIv3.genes.gff3 \
 --seqType bam \
