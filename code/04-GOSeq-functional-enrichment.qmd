@@ -1,14 +1,36 @@
 ---
-title: "06-GOSeq-functional-enrichment"
-format: html
+title: "04-GOSeq-functional-enrichment"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+format:
+  gfm: default
+  html:
+    df-print: paged
+    toc: true
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: breeze
+    code-overflow: wrap
+    theme:
+      light: flatly
+      dark: darkly
 editor: visual
 ---
 
-```{}
-```
+```{r setup, include=FALSE}
 
-```{}
-```
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,         # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  fig.width = 6,       # Set plot width in inches
+  fig.height = 4,      # Set plot height in inches
+  fig.align = "center" # Align plots to the center
+)
 
-```{}
 ```

@@ -1,5 +1,7 @@
 ---
 title: "02-kallisto-pseudo-align"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 format:
   gfm: default
   html:
@@ -19,8 +21,18 @@ format:
 editor: visual
 ---
 
-```{r, setup, include=FALSE}
-knitr::opts_chunk$set(highlight = TRUE, eval = FALSE)
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,         # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  fig.width = 6,       # Set plot width in inches
+  fig.height = 4,      # Set plot height in inches
+  fig.align = "center" # Align plots to the center
+)
+
 ```
 
 Check kallisto `version` to confirm the correct file path to the program with the following command:
@@ -29,38 +41,34 @@ Check kallisto `version` to confirm the correct file path to the program with th
 /home/shared/kallisto/kallisto
 ```
 
-# Create Index File
+# Create Index File with `kallisto index -i`
 
 This code is indexing the file `Montipora_capitata_HIv3.genes.cds.fna` while also renaming it as `mcap_rna.index`. **/home/shared/kallisto/kallisto** is the absolute path to the kallisto program from within the raven server, while the lines after the index command indicate where to where to write the file to (`mcap_rna.index`) and where to get the data from (the`Montipora_capitata_HIv3.genes.cds.fna` file)
 
 ```{r, engine='bash'}
 
-# move to the output folder
-cd ../output
 # if it doesn't already exist, make an index folder inside output
-mkdir -p index
+mkdir -p ../output/kallisto-index
 
 # use kallisto to build an index file
 /home/shared/kallisto/kallisto \
 index -i \
-../output/index/mcap_rna_kallisto.index \
+../output/kallisto-index/mcap_rna_kallisto.index \
 ../data/Montipora_capitata_HIv3.genes.cds.fna
 
 ```
 
-# Kallisto Quant
+# Make Abundance Files `abundance.tsv` for each sample with `kallisto quant -i`
 
-The next chunk performs the following steps:
+-   create a subdirectory `kallisto` in the `output` folder using `mkdir -p`
 
--   creates a subdirectory `kallisto` in the `output` folder using `mkdir -p`
+-   use the `find` utility to search for all files in the `/home/shared/8TB_HDD_01/mcap/` directory that match the pattern `*.fastq`
 
--   Uses the `find` utility to search for all files in the `/home/shared/8TB_HDD_01/mcap/` directory that match the pattern `*.fastq`
+-   use the `basename` command to extract the base file name of each file (i.e., the file name without the directory path), and remove the suffix `.fastq`.
 
--   Uses the `basename` command to extract the base file name of each file (i.e., the file name without the directory path), and removes the suffix `.fastq`.
+-   run the kallisto `quant` command on each input file, with the following options:
 
--   Runs the kallisto `quant` command on each input file, with the following options:
-
--   `-i ../data/mcap_rna.index`: Use the kallisto index file located at `../data/mcap_rna.index`.
+-   `-i ../output/kallisto-index/mcap_rna_kallisto.index`: Use the kallisto index file located at `../output/kallisto-index/mcap_rna_kallisto.index`.
 
 -   `-o ../output/kallisto_01/{}`: Write the output files to a directory called `../output/kallisto_01/` with a subdirectory named after the base filename of the input file (the {} is a placeholder for the base filename).
 
@@ -70,25 +78,20 @@ The next chunk performs the following steps:
 
 -   The input file to process is specified using the {} placeholder, which is replaced by the base file name from the previous step.
 
-
 ```{r, engine='bash'}
 # make directory in the output folder for kallisto (if it already exists, the `-p` option creates intermediate directories as needed, and keeps from throwing an error)
-mkdir -p ../output/kallisto
+mkdir -p ../output/kallisto-abundance
 
 
 find /home/shared/8TB_HDD_01/mcap/*.fastq \
 | xargs basename -s .fastq | xargs -I{} /home/shared/kallisto/kallisto \
-quant -i ../data/mcap_rna.index \
--o ../output/kallisto/{} \
+quant -i ../output/kallisto-index/mcap_rna_kallisto.index \
+-o ../output/kallisto-abundance/{} \
 -t 40 \
 --single -l 100 -s 10 /home/shared/8TB_HDD_01/mcap/{}.fastq
 ```
 
-This makes individual folders for each sample. 
-In each folder there should be three files:
-- run_info.json
-- abundance.tsv
-- abundance.h5
+This makes individual folders for each sample. In each folder there should be three files: - run_info.json - abundance.tsv - abundance.h5
 
 # Trinity Abundance Estimates, Gene Expression Matrix
 
@@ -112,33 +115,20 @@ The specific options and arguments used in the command are as follows:
 -   `--name_sample_by_basedir`: Use the sample directory name (i.e., the final directory in the input file paths) as the sample name in the output matrix.
 
 -   Use the kallisto abundance.tsc files generated in the last step as input for creating the gene expression matrix.
+
 ```{r, engine='bash'}
 
 ```
 
+trinity gene expression matrix
 
-```{r, engine='bash'}
-
-abundance_input=../output/kallisto/*/*.tsv
-
-for f in ${abundance_input}: do
-perl /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl \
-    --est_method kallisto \
-    --gene_trans_map none \
-    --out_prefix ../output/kallisto/gem \
-    --name_sample_by_basedir \
-    {f}
-    
-```
-
-trinity gene expression matrix 
 ```{r, engine='bash'}
 
 # If it doesn't already exist, create a folder named 'trinity-gem' inside the 'output' folder
-mkdir -p ../output/trinity-gem
+mkdir -p ../output/trinity-matrix
 
 # A list of all the paths to each 'abundance.tsv' file for each sample
-abundance_paths=../output/kallisto/*/abundance.tsv
+abundance_paths=../output/kallisto-abundance/*/abundance.tsv
 # The paths list, but joined with a '\' between each one!
 joined_abundance_paths="${abundance_paths[*]// /\\ }"
 
@@ -147,14 +137,17 @@ joined_abundance_paths="${abundance_paths[*]// /\\ }"
     --est_method kallisto \
     --gene_trans_map none \
     --name_sample_by_basedir \
-    --out_prefix ../output/trinity-gem/ \
+    --out_prefix ../output/trinity-matrix/mcap \
      ${joined_abundance_paths} 
 
 ```
-Getting some errors I don't understand.. 
 
-> R --no-save --no-restore --no-site-file --no-init-file -q < ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1>&2 
-sh: 1: R: not found
-Error, cmd: R --no-save --no-restore --no-site-file --no-init-file -q < ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1>&2  died with ret (32512)  at /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl line 105.
-Error, CMD: /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl --matrix ../output/trinity-gem/.isoform.TPM.not_cross_norm > ../output/trinity-gem/.isoform.TMM.EXPR.matrix died with ret 6400 at /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl line 385.
+Getting some errors I don't understand..
 
+> R --no-save --no-restore --no-site-file --no-init-file -q \< ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1\>&2 sh: 1: R: not found Error, cmd: R --no-save --no-restore --no-site-file --no-init-file -q \< ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1\>&2 died with ret (32512) at /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl line 105. Error, CMD: /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl --matrix ../output/trinity-gem/.isoform.TPM.not_cross_norm \> ../output/trinity-gem/.isoform.TMM.EXPR.matrix died with ret 6400 at /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl line 385.
+
+# Summary & Next Steps
+
+::: callout-info
+Then we take the matrix (which is a count matrix) located at '../output/trinity-matrix/mcap.isoform.counts.matrix' and run it through the `03-DESeq2`code!
+:::

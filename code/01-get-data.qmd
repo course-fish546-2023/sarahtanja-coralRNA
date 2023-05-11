@@ -31,9 +31,6 @@ knitr::opts_chunk$set(
   fig.align = "center" # Align plots to the center
 )
 
-# The following setting is important, do not omit.
-options(stringsAsFactors = FALSE) #Set Strings to character
-
 ```
 # Downloading RNA sequence files 
 
@@ -232,6 +229,7 @@ gunzip Montipora_capitata_HIv3.assembly.fasta.gz
 
 So we now have the sample sequence files located at absolute path `/home/shared/8TB_HDD_01/mcap/` And we have the reference genome V3 files located at `../data/`
 
+# Summary & Next Steps
 ::: callout-info
 **Next Step:** Go to `02s-pseudo-align-kallisto` to align reads to the reference genome
 :::
