@@ -112,21 +112,49 @@ The specific options and arguments used in the command are as follows:
 -   `--name_sample_by_basedir`: Use the sample directory name (i.e., the final directory in the input file paths) as the sample name in the output matrix.
 
 -   Use the kallisto abundance.tsc files generated in the last step as input for creating the gene expression matrix.
+```{r, engine='bash'}
+
+```
+
 
 ```{r, engine='bash'}
 
+abundance_input=../output/kallisto/*/*.tsv
+
+for f in ${abundance_input}: do
 perl /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl \
---est_method kallisto \
+    --est_method kallisto \
     --gene_trans_map none \
-    --out_prefix ../output/kallisto_01 \
+    --out_prefix ../output/kallisto/gem \
     --name_sample_by_basedir \
-    ../output/kallisto_01/SRR22293447/abundance.tsv \
-    ../output/kallisto_01/SRR22293448/abundance.tsv \
-    ../output/kallisto_01/SRR22293449/abundance.tsv \
-    ../output/kallisto_01/SRR22293450/abundance.tsv \
-    ../output/kallisto_01/SRR22293451/abundance.tsv \
-    ../output/kallisto_01/SRR22293452/abundance.tsv \
-    ../output/kallisto_01/SRR22293453/abundance.tsv \
-    ../output/kallisto_01/SRR22293454/abundance.tsv 
+    {f}
+    
+```
+
+trinity gene expression matrix 
+```{r, engine='bash'}
+
+# If it doesn't already exist, create a folder named 'trinity-gem' inside the 'output' folder
+mkdir -p ../output/trinity-gem
+
+# A list of all the paths to each 'abundance.tsv' file for each sample
+abundance_paths=../output/kallisto/*/abundance.tsv
+# The paths list, but joined with a '\' between each one!
+joined_abundance_paths="${abundance_paths[*]// /\\ }"
+
+# Create gene expression matrix with `trinity` using the list of '\' joined paths named `joined_abundance_paths`
+  perl /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl \
+    --est_method kallisto \
+    --gene_trans_map none \
+    --name_sample_by_basedir \
+    --out_prefix ../output/trinity-gem/ \
+     ${joined_abundance_paths} 
 
 ```
+Getting some errors I don't understand.. 
+
+> R --no-save --no-restore --no-site-file --no-init-file -q < ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1>&2 
+sh: 1: R: not found
+Error, cmd: R --no-save --no-restore --no-site-file --no-init-file -q < ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1>&2  died with ret (32512)  at /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl line 105.
+Error, CMD: /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl --matrix ../output/trinity-gem/.isoform.TPM.not_cross_norm > ../output/trinity-gem/.isoform.TMM.EXPR.matrix died with ret 6400 at /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl line 385.
+
