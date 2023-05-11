@@ -6,6 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Sarah Tanja">
+<meta name="dcterms.date" content="2023-05-11">
 
 <title>02-kallisto-pseudo-align</title>
 <style>
@@ -114,9 +116,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#create-index-file" id="toc-create-index-file" class="nav-link active" data-scroll-target="#create-index-file">Create Index File</a></li>
-  <li><a href="#kallisto-quant" id="toc-kallisto-quant" class="nav-link" data-scroll-target="#kallisto-quant">Kallisto Quant</a></li>
+  <li><a href="#create-index-file-with-kallisto-index--i" id="toc-create-index-file-with-kallisto-index--i" class="nav-link active" data-scroll-target="#create-index-file-with-kallisto-index--i">Create Index File with <code>kallisto index -i</code></a></li>
+  <li><a href="#make-abundance-files-abundance.tsv-for-each-sample-with-kallisto-quant--i" id="toc-make-abundance-files-abundance.tsv-for-each-sample-with-kallisto-quant--i" class="nav-link" data-scroll-target="#make-abundance-files-abundance.tsv-for-each-sample-with-kallisto-quant--i">Make Abundance Files <code>abundance.tsv</code> for each sample with <code>kallisto quant -i</code></a></li>
   <li><a href="#trinity-abundance-estimates-gene-expression-matrix" id="toc-trinity-abundance-estimates-gene-expression-matrix" class="nav-link" data-scroll-target="#trinity-abundance-estimates-gene-expression-matrix">Trinity Abundance Estimates, Gene Expression Matrix</a></li>
+  <li><a href="#summary-next-steps" id="toc-summary-next-steps" class="nav-link" data-scroll-target="#summary-next-steps">Summary &amp; Next Steps</a></li>
   </ul>
 </nav>
 </div>
@@ -131,7 +134,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Sarah Tanja </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 11, 2023</p>
+    </div>
+  </div>
   
     
   </div>
@@ -140,54 +155,59 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </header>
 
 <p>Check kallisto <code>version</code> to confirm the correct file path to the program with the following command:</p>
-<div class="cell">
+<div class="cell" data-layout-align="center">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/home/shared/kallisto/kallisto</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<section id="create-index-file" class="level1">
-<h1>Create Index File</h1>
+<section id="create-index-file-with-kallisto-index--i" class="level1">
+<h1>Create Index File with <code>kallisto index -i</code></h1>
 <p>This code is indexing the file <code>Montipora_capitata_HIv3.genes.cds.fna</code> while also renaming it as <code>mcap_rna.index</code>. <strong>/home/shared/kallisto/kallisto</strong> is the absolute path to the kallisto program from within the raven server, while the lines after the index command indicate where to where to write the file to (<code>mcap_rna.index</code>) and where to get the data from (the<code>Montipora_capitata_HIv3.genes.cds.fna</code> file)</p>
-<div class="cell">
+<div class="cell" data-layout-align="center">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/home/shared/kallisto/kallisto</span> <span class="dt">\</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>index <span class="at">-i</span> <span class="dt">\</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>../data/mcap_rna.index <span class="dt">\</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>../data/Montipora_capitata_HIv3.genes.cds.fna</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># if it doesn't already exist, make an index folder inside output</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ../output/kallisto-index</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># use kallisto to build an index file</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">/home/shared/kallisto/kallisto</span> <span class="dt">\</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>index <span class="at">-i</span> <span class="dt">\</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>../output/kallisto-index/mcap_rna_kallisto.index <span class="dt">\</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>../data/Montipora_capitata_HIv3.genes.cds.fna</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
-<section id="kallisto-quant" class="level1">
-<h1>Kallisto Quant</h1>
-<p>The next chunk performs the following steps:</p>
+<section id="make-abundance-files-abundance.tsv-for-each-sample-with-kallisto-quant--i" class="level1">
+<h1>Make Abundance Files <code>abundance.tsv</code> for each sample with <code>kallisto quant -i</code></h1>
 <ul>
-<li><p>creates a subdirectory <code>kallisto</code> in the <code>output</code> folder using <code>mkdir -p</code></p></li>
-<li><p>Uses the <code>find</code> utility to search for all files in the <code>/home/shared/8TB_HDD_01/mcap/</code> directory that match the pattern <code>*.fastq</code></p></li>
-<li><p>Uses the <code>basename</code> command to extract the base file name of each file (i.e., the file name without the directory path), and removes the suffix <code>.fastq</code>.</p></li>
-<li><p>Runs the kallisto <code>quant</code> command on each input file, with the following options:</p></li>
-<li><p><code>-i ../data/mcap_rna.index</code>: Use the kallisto index file located at <code>../data/mcap_rna.index</code>.</p></li>
+<li><p>create a subdirectory <code>kallisto</code> in the <code>output</code> folder using <code>mkdir -p</code></p></li>
+<li><p>use the <code>find</code> utility to search for all files in the <code>/home/shared/8TB_HDD_01/mcap/</code> directory that match the pattern <code>*.fastq</code></p></li>
+<li><p>use the <code>basename</code> command to extract the base file name of each file (i.e., the file name without the directory path), and remove the suffix <code>.fastq</code>.</p></li>
+<li><p>run the kallisto <code>quant</code> command on each input file, with the following options:</p></li>
+<li><p><code>-i ../output/kallisto-index/mcap_rna_kallisto.index</code>: Use the kallisto index file located at <code>../output/kallisto-index/mcap_rna_kallisto.index</code>.</p></li>
 <li><p><code>-o ../output/kallisto_01/{}</code>: Write the output files to a directory called <code>../output/kallisto_01/</code> with a subdirectory named after the base filename of the input file (the {} is a placeholder for the base filename).</p></li>
 <li><p><code>-t 40</code>: Use 40 threads for the computation.</p></li>
 <li><p><code>--single -l 100 -s 10</code>: Specify that the input file contains single-end reads (–single), with an average read length of 100 (-l 100) and a standard deviation of 10 (-s 10).</p></li>
 <li><p>The input file to process is specified using the {} placeholder, which is replaced by the base file name from the previous step.</p></li>
 </ul>
-<div class="cell">
+<div class="cell" data-layout-align="center">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make directory in the output folder for kallisto (if it already exists, the `-p` option creates intermediate directories as needed, and keeps from throwing an error)</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ../output/kallisto</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ../output/kallisto-abundance</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> /home/shared/8TB_HDD_01/mcap/<span class="pp">*</span>.fastq <span class="dt">\</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">|</span> <span class="fu">xargs</span> basename <span class="at">-s</span> .fastq <span class="kw">|</span> <span class="fu">xargs</span> <span class="at">-I{}</span> /home/shared/kallisto/kallisto <span class="dt">\</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>quant <span class="at">-i</span> ../data/mcap_rna.index <span class="dt">\</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>-o ../output/kallisto/{} <span class="dt">\</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>quant <span class="at">-i</span> ../output/kallisto-index/mcap_rna_kallisto.index <span class="dt">\</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>-o ../output/kallisto-abundance/{} <span class="dt">\</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>-t 40 <span class="dt">\</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>--single <span class="at">-l</span> 100 <span class="at">-s</span> 10 /home/shared/8TB_HDD_01/mcap/{}.fastq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>This makes individual folders for each sample. In each folder there should be three files: - run_info.json - abundance.tsv - abundance.h5</p>
 </section>
 <section id="trinity-abundance-estimates-gene-expression-matrix" class="level1">
 <h1>Trinity Abundance Estimates, Gene Expression Matrix</h1>
@@ -195,7 +215,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>The specific options and arguments used in the command are as follows:</p>
 <ul>
 <li><p><code>perl /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl</code>: Run the abundance_estimates_to_matrix.pl script from Trinity.</p>
-<div class="cell">
+<div class="cell" data-layout-align="center">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a></span>
@@ -204,28 +224,57 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div></li>
 <li><p><code>--est_method kallisto</code>: Specify that the abundance estimates were generated using kallisto.</p></li>
 <li><p><code>--gene_trans_map none</code>: Do not use a gene-to-transcript mapping file.</p></li>
-<li><p><code>--out_prefix ../output/kallisto_01</code>: Use ../output/kallisto_01 as the output directory and prefix for the gene expression matrix file.</p></li>
+<li><p><code>--out_prefix ../output/kallisto</code>: Use ../output/kallisto as the output directory and prefix for the gene expression matrix file.</p></li>
 <li><p><code>--name_sample_by_basedir</code>: Use the sample directory name (i.e., the final directory in the input file paths) as the sample name in the output matrix.</p></li>
-<li><p>And then there are the kallisto abundance files to use as input for creating the gene expression matrix.</p></li>
+<li><p>Use the kallisto abundance.tsc files generated in the last step as input for creating the gene expression matrix.</p></li>
 </ul>
-<div class="cell">
+<div class="cell" data-layout-align="center">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">perl</span> /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl <span class="dt">\</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>--est_method kallisto <span class="dt">\</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--gene_trans_map</span> none <span class="dt">\</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--out_prefix</span> ../output/kallisto_01 <span class="dt">\</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--name_sample_by_basedir</span> <span class="dt">\</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    ../output/kallisto_01/SRR22293447/abundance.tsv <span class="dt">\</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    ../output/kallisto_01/SRR22293448/abundance.tsv <span class="dt">\</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    ../output/kallisto_01/SRR22293449/abundance.tsv <span class="dt">\</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    ../output/kallisto_01/SRR22293450/abundance.tsv <span class="dt">\</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    ../output/kallisto_01/SRR22293451/abundance.tsv <span class="dt">\</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    ../output/kallisto_01/SRR22293452/abundance.tsv <span class="dt">\</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    ../output/kallisto_01/SRR22293453/abundance.tsv <span class="dt">\</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    ../output/kallisto_01/SRR22293454/abundance.tsv </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+</div>
+<p>trinity gene expression matrix</p>
+<div class="cell" data-layout-align="center">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># If it doesn't already exist, create a folder named 'trinity-gem' inside the 'output' folder</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ../output/trinity-matrix</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># A list of all the paths to each 'abundance.tsv' file for each sample</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="va">abundance_paths</span><span class="op">=</span>../output/kallisto-abundance/<span class="pp">*</span>/abundance.tsv</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># The paths list, but joined with a '\' between each one!</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="va">joined_abundance_paths</span><span class="op">=</span><span class="st">"</span><span class="va">${abundance_paths</span><span class="op">[*]//</span><span class="ss"> </span><span class="op">/</span><span class="dt">\\</span> <span class="va">}</span><span class="st">"</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create gene expression matrix with `trinity` using the list of '\' joined paths named `joined_abundance_paths`</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">perl</span> /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl <span class="dt">\</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">--est_method</span> kallisto <span class="dt">\</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">--gene_trans_map</span> none <span class="dt">\</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">--name_sample_by_basedir</span> <span class="dt">\</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">--out_prefix</span> ../output/trinity-matrix/mcap <span class="dt">\</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>     <span class="va">${joined_abundance_paths}</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Getting some errors I don’t understand..</p>
+<blockquote class="blockquote">
+<p>R –no-save –no-restore –no-site-file –no-init-file -q &lt; ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1&gt;&amp;2 sh: 1: R: not found Error, cmd: R –no-save –no-restore –no-site-file –no-init-file -q &lt; ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1&gt;&amp;2 died with ret (32512) at /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl line 105. Error, CMD: /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl –matrix ../output/trinity-gem/.isoform.TPM.not_cross_norm &gt; ../output/trinity-gem/.isoform.TMM.EXPR.matrix died with ret 6400 at /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl line 385.</p>
+</blockquote>
+</section>
+<section id="summary-next-steps" class="level1">
+<h1>Summary &amp; Next Steps</h1>
+<div class="callout-info callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Info
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Then we take the matrix (which is a count matrix) located at ‘../output/trinity-matrix/mcap.isoform.counts.matrix’ and run it through the <code>03-DESeq2</code>code!</p>
+</div>
 </div>
 <!-- -->
 
@@ -550,6 +599,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
 <pre class="markdown" data-shortcodes="false"><code>---
 title: "02-kallisto-pseudo-align"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 format:
   gfm: default
   html:
@@ -569,8 +620,18 @@ format:
 editor: visual
 ---
 
-```{r, setup, include=FALSE}
-knitr::opts_chunk$set(highlight = TRUE, eval = FALSE)
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,         # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  fig.width = 6,       # Set plot width in inches
+  fig.height = 4,      # Set plot height in inches
+  fig.align = "center" # Align plots to the center
+)
+
 ```
 
 Check kallisto `version` to confirm the correct file path to the program with the following command:
@@ -579,31 +640,34 @@ Check kallisto `version` to confirm the correct file path to the program with th
 /home/shared/kallisto/kallisto
 ```
 
-# Create Index File
+# Create Index File with `kallisto index -i`
 
 This code is indexing the file `Montipora_capitata_HIv3.genes.cds.fna` while also renaming it as `mcap_rna.index`. **/home/shared/kallisto/kallisto** is the absolute path to the kallisto program from within the raven server, while the lines after the index command indicate where to where to write the file to (`mcap_rna.index`) and where to get the data from (the`Montipora_capitata_HIv3.genes.cds.fna` file)
 
 ```{r, engine='bash'}
+
+# if it doesn't already exist, make an index folder inside output
+mkdir -p ../output/kallisto-index
+
+# use kallisto to build an index file
 /home/shared/kallisto/kallisto \
 index -i \
-../data/mcap_rna.index \
+../output/kallisto-index/mcap_rna_kallisto.index \
 ../data/Montipora_capitata_HIv3.genes.cds.fna
 
 ```
 
-# Kallisto Quant
+# Make Abundance Files `abundance.tsv` for each sample with `kallisto quant -i`
 
-The next chunk performs the following steps:
+-   create a subdirectory `kallisto` in the `output` folder using `mkdir -p`
 
--   creates a subdirectory `kallisto` in the `output` folder using `mkdir -p`
+-   use the `find` utility to search for all files in the `/home/shared/8TB_HDD_01/mcap/` directory that match the pattern `*.fastq`
 
--   Uses the `find` utility to search for all files in the `/home/shared/8TB_HDD_01/mcap/` directory that match the pattern `*.fastq`
+-   use the `basename` command to extract the base file name of each file (i.e., the file name without the directory path), and remove the suffix `.fastq`.
 
--   Uses the `basename` command to extract the base file name of each file (i.e., the file name without the directory path), and removes the suffix `.fastq`.
+-   run the kallisto `quant` command on each input file, with the following options:
 
--   Runs the kallisto `quant` command on each input file, with the following options:
-
--   `-i ../data/mcap_rna.index`: Use the kallisto index file located at `../data/mcap_rna.index`.
+-   `-i ../output/kallisto-index/mcap_rna_kallisto.index`: Use the kallisto index file located at `../output/kallisto-index/mcap_rna_kallisto.index`.
 
 -   `-o ../output/kallisto_01/{}`: Write the output files to a directory called `../output/kallisto_01/` with a subdirectory named after the base filename of the input file (the {} is a placeholder for the base filename).
 
@@ -613,19 +677,20 @@ The next chunk performs the following steps:
 
 -   The input file to process is specified using the {} placeholder, which is replaced by the base file name from the previous step.
 
-
 ```{r, engine='bash'}
 # make directory in the output folder for kallisto (if it already exists, the `-p` option creates intermediate directories as needed, and keeps from throwing an error)
-mkdir -p ../output/kallisto
+mkdir -p ../output/kallisto-abundance
 
 
 find /home/shared/8TB_HDD_01/mcap/*.fastq \
 | xargs basename -s .fastq | xargs -I{} /home/shared/kallisto/kallisto \
-quant -i ../data/mcap_rna.index \
--o ../output/kallisto/{} \
+quant -i ../output/kallisto-index/mcap_rna_kallisto.index \
+-o ../output/kallisto-abundance/{} \
 -t 40 \
 --single -l 100 -s 10 /home/shared/8TB_HDD_01/mcap/{}.fastq
 ```
+
+This makes individual folders for each sample. In each folder there should be three files: - run_info.json - abundance.tsv - abundance.h5
 
 # Trinity Abundance Estimates, Gene Expression Matrix
 
@@ -644,29 +709,47 @@ The specific options and arguments used in the command are as follows:
 
 -   `--gene_trans_map none`: Do not use a gene-to-transcript mapping file.
 
--   `--out_prefix ../output/kallisto_01`: Use ../output/kallisto_01 as the output directory and prefix for the gene expression matrix file.
+-   `--out_prefix ../output/kallisto`: Use ../output/kallisto as the output directory and prefix for the gene expression matrix file.
 
 -   `--name_sample_by_basedir`: Use the sample directory name (i.e., the final directory in the input file paths) as the sample name in the output matrix.
 
--   And then there are the kallisto abundance files to use as input for creating the gene expression matrix.
+-   Use the kallisto abundance.tsc files generated in the last step as input for creating the gene expression matrix.
 
 ```{r, engine='bash'}
 
-perl /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl \
---est_method kallisto \
-    --gene_trans_map none \
-    --out_prefix ../output/kallisto_01 \
-    --name_sample_by_basedir \
-    ../output/kallisto_01/SRR22293447/abundance.tsv \
-    ../output/kallisto_01/SRR22293448/abundance.tsv \
-    ../output/kallisto_01/SRR22293449/abundance.tsv \
-    ../output/kallisto_01/SRR22293450/abundance.tsv \
-    ../output/kallisto_01/SRR22293451/abundance.tsv \
-    ../output/kallisto_01/SRR22293452/abundance.tsv \
-    ../output/kallisto_01/SRR22293453/abundance.tsv \
-    ../output/kallisto_01/SRR22293454/abundance.tsv 
+```
 
-```</code></pre>
+trinity gene expression matrix
+
+```{r, engine='bash'}
+
+# If it doesn't already exist, create a folder named 'trinity-gem' inside the 'output' folder
+mkdir -p ../output/trinity-matrix
+
+# A list of all the paths to each 'abundance.tsv' file for each sample
+abundance_paths=../output/kallisto-abundance/*/abundance.tsv
+# The paths list, but joined with a '\' between each one!
+joined_abundance_paths="${abundance_paths[*]// /\\ }"
+
+# Create gene expression matrix with `trinity` using the list of '\' joined paths named `joined_abundance_paths`
+  perl /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl \
+    --est_method kallisto \
+    --gene_trans_map none \
+    --name_sample_by_basedir \
+    --out_prefix ../output/trinity-matrix/mcap \
+     ${joined_abundance_paths} 
+
+```
+
+Getting some errors I don't understand..
+
+&gt; R --no-save --no-restore --no-site-file --no-init-file -q \&lt; ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1\&gt;&amp;2 sh: 1: R: not found Error, cmd: R --no-save --no-restore --no-site-file --no-init-file -q \&lt; ../output/trinity-gem/.isoform.TPM.not_cross_norm.runTMM.R 1\&gt;&amp;2 died with ret (32512) at /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl line 105. Error, CMD: /home/shared/trinityrnaseq-v2.12.0/util/support_scripts/run_TMM_scale_matrix.pl --matrix ../output/trinity-gem/.isoform.TPM.not_cross_norm \&gt; ../output/trinity-gem/.isoform.TMM.EXPR.matrix died with ret 6400 at /home/shared/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl line 385.
+
+# Summary &amp; Next Steps
+
+::: callout-info
+Then we take the matrix (which is a count matrix) located at '../output/trinity-matrix/mcap.isoform.counts.matrix' and run it through the `03-DESeq2`code!
+:::</code></pre>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

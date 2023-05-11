@@ -34,3 +34,93 @@ knitr::opts_chunk$set(
 )
 
 ```
+
+celeste's BLAST steps [HERE](https://github.com/course-fish546-2023/celeste-tunicate-devo/blob/main/code/04-blast.Rmd)
+
+Using BLAST to annotate reference transcriptome
+Downloading complete UniProt database.
+UniProt is a freely accessible database of protein sequence and functional information that is continuously updated every 8 weeks.
+```{r, engine='bash'}
+cd ../data
+curl -O https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+mv uniprot_sprot.fasta.gz uniprot_sprot_r2023_01.fasta.gz
+gunzip -k uniprot_sprot_r2023_01.fasta.gz
+ls ../data
+```
+
+Using the NCBI blast software command 'makeblastdb' to create a blast database from the uniprot fasta file.
+```{r, engine='bash'}
+/home/shared/ncbi-blast-2.11.0+/bin/makeblastdb \
+-in /home/shared/8TB_HDD_02/cvaldi/celeste-tunicate-devo/data/uniprot_sprot_r2023_01.fasta \
+-dbtype prot \
+-out /home/shared/8TB_HDD_02/cvaldi/celeste-tunicate-devo/output/blastdb/uniprot_sprot_r2023_01
+```
+
+Lets look at what's in the sequence.fata file before we BLAST it.
+```{r, engine='bash'}
+cd data/psuedo-alignment
+head sequence.fasta
+echo "How many sequences are there?"
+grep -c ">" sequence.fasta
+```
+
+Blasting the reference transcriptome:
+```{r, engine='bash'}
+/home/shared/ncbi-blast-2.11.0+/bin/blastx \
+-query /home/shared/8TB_HDD_02/cvaldi/celeste-tunicate-devo/data/psuedo-alignment/sequence.fasta \
+-db /home/shared/8TB_HDD_02/cvaldi/celeste-tunicate-devo/output/blastdb/uniprot_sprot_r2023_01 \
+-out /home/shared/8TB_HDD_02/cvaldi/celeste-tunicate-devo/output/Bsc-uniprot_blastx.tab \
+-evalue 1E-20 \
+-num_threads 20 \
+-max_target_seqs 1 \
+-outfmt 6
+```
+
+Lets take a little peak at the tab file we just created:
+```{r, engine='bash'}
+head -5 ../output/Bsc-uniprot_blastx.tab
+wc -l ../output/Bsc-uniprot_blastx.tab
+```
+
+Curl file from UniProt that contains protein data in a specified format (accession number, reviewed status, ID, protein name, gene names, organism name, length, GO function, GO, process, GO component, GO ID, interacting partners, EC number, Reactome pathway, UniPathway, and InterPro cross-references. This can be then used to 
+
+```{bash}
+cd ../data
+curl -O -H "Accept: text/plain; format=tsv" "https://rest.uniprot.org/uniprotkb/stream?compressed=true&fields=accession%2Creviewed%2Cid%2Cprotein_name%2Cgene_names%2Corganism_name%2Clength%2Cgo_f%2Cgo%2Cgo_p%2Cgo_c%2Cgo_id%2Ccc_interaction%2Cec%2Cxref_reactome%2Cxref_unipathway%2Cxref_interpro&format=tsv&query=%28%2A%29%20AND%20%28reviewed%3Atrue%29"
+```
+
+```{r, engine = 'bash'}
+tr '|' '\t' < ../output/Bsc-uniprot_blastx.tab | head -2
+
+# replace the "|" with "\t" in the file "Ab_4-uniprot_blastx.tab"
+# and save the output to the file "Ab_4-uniprot_blastx_sep.tab"
+
+tr '|' '\t' < ../output/Bsc-uniprot_blastx.tab \
+> ../output/Bsc-uniprot_blastx_sep.tab
+
+# peaking at the output file earlier on
+head -2 ../output/Bsc-uniprot_blastx_sep.tab
+wc -l ../output/Bsc-uniprot_blastx_sep.tab
+```
+
+Now we will merge our two tables:
+```{r}
+# reading into r environ the blast table we created
+bltabl <- read.csv("../output/Bsc-uniprot_blastx_sep.tab", sep = '\t', header = FALSE)
+
+```
+
+```{r}
+#reading in annotation table from Gannet and saving as object....
+library(httr)
+url <- "https://gannet.fish.washington.edu/seashell/snaps/uniprot_table_r2023_01.tab"
+response <- GET(url, config(ssl_verifypeer = FALSE))
+spgo <- read.csv(text = rawToChar(response$content), sep = "\t", header = TRUE)
+```
+
+Joining the two tables:
+```{r}
+left_join(bltabl, spgo,  by = c("V3" = "Entry")) %>%
+  select(V1, V3, V13, Protein.names, Organism, Gene.Ontology..biological.process., Gene.Ontology.IDs) %>% mutate(V1 = str_replace_all(V1, 
+            pattern = "solid0078_20110412_FRAG_BC_WHITE_WHITE_F3_QV_SE_trimmed", replacement = "Ab")) %>%
+  write_delim("../output/blast_annot_go.tab", delim = '\t')

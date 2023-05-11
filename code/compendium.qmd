@@ -1,5 +1,5 @@
 ---
-title: "FISH 546 - DGE Compendium"
+title: "FISH 546 - Compendium"
 author: "Sarah Tanja"
 ate: "`r format(Sys.time(), '%d %B, %Y')`"  
 format:
@@ -22,12 +22,12 @@ format:
 
 # Project Overview
 
-## Get Data
+## Get Sequence & Genome Data
 
-## Align Sequences
+## Align Sequences 
 
-## Make Count Matrix
+## Make Count Matrix & Visualize Differentially Expressed Genes
 
-## Identify & Visualize Differentially Expressed Genes
+## Identify Differentially Expressed Genes using Gene Ontology (GO) terms
 
 ## 
