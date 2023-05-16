@@ -2,7 +2,7 @@ README
 ================
 
 
-# Differential Gene Expression Analysis Code Folder
+# Differential Gene Expression Analysis: Code Folder
 
 
 > **Important**
@@ -51,6 +51,10 @@ In summary, pseudo aligners like Kallisto are computationally efficient, suitabl
 
 In-progress alignment of sample sequences to reference genome using
 HISAT
+
+#### 02b-align-hisat
+
+#### 02c-align-hisat-mox
 
 #### 03-differentially-expressed-genes-DESeq2
 

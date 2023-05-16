@@ -70,9 +70,7 @@ countmatrix <- countmatrix[,-1]
 head(countmatrix)
 ```
 
-This count matrix has 54,384 rows (genes) and 8 columns (samples)
-Each column represents a sample, and each row represents a gene. 
-The 'count' is the number of times that gene was found in the RNA sequence of the sample. 
+This count matrix has 54,384 rows (genes) and 8 columns (samples) Each column represents a sample, and each row represents a gene. The 'count' is the number of times that gene was found in the RNA sequence of the sample.
 
 ### Round integers up to whole numbers for analysis
 
@@ -111,12 +109,11 @@ dim(deseq2.res)
 summary(deseq2.res)
 ```
 
-
-This code chunk subsets the deseq2.res data frame, selecting the rows where both of the following conditions are satisfied:
-`!is.na(deseq2.res$padj)` adjusted p-value is not missing  
-`deseq2.res$padj <= 0.05` adjusted p-value is less than or equal to 0.05 
+This code chunk subsets the deseq2.res data frame, selecting the rows where both of the following conditions are satisfied: `!is.na(deseq2.res$padj)` adjusted p-value is not missing\
+`deseq2.res$padj <= 0.05` adjusted p-value is less than or equal to 0.05
 
 In summary, the code selects rows from the deseq2.res data frame where the padj values are not missing and are less than or equal to 0.05. It then calculates the dimensions (number of rows and columns) of this subset, giving us the number of significantly differentially expressed genes between our comparative groups 'embryos' and 'recruits'
+
 ```{r}
 deseq2.sig.res <- (deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ])
 
@@ -125,8 +122,9 @@ head(deseq2.sig.res)
 # calculate the dimensions of the resulting subset. The dim() function returns a vector with two elements: the number of rows and the number of columns in the subset.
 dim(deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ])
 ```
+
 ::: callout-important
-*Results:* Of the 54,384 rows (genes), 5,736 of them were significantly differentially expressed (p <= 0.05) between *M. capitata* embryos and recruits. 
+*Results:* Of the 54,384 rows (genes), 5,736 of them were significantly differentially expressed (p \<= 0.05) between *M. capitata* embryos and recruits.
 :::
 
 # Plotting
@@ -179,7 +177,9 @@ ggsave("../figs/heatmap_50.png", plot = heatmap_50, width = 8, height = 5, dpi =
 heatmap_50
 
 ```
+
 ## Fancy Volcano
+
 ```{r}
 
 ```
@@ -198,7 +198,6 @@ fancy_volcano <- plot(deseq2.res$baseMean, deseq2.res$log2FoldChange,
 dev.print(png, file = "../figs/fancy-volcano.png", width = 6, height = 4, units = "in", res = 300)
 
 ```
-
 
 ## Basic Volcano
 
@@ -235,7 +234,6 @@ Write the output to a table
 mkdir -p ../output/deseq
 ```
 
-
 ```{r}
 write.table(tmp.sig, "../output/deseq/DEGlist.tab", sep = '\t', row.names = T)
 ```
@@ -248,7 +246,6 @@ deglist$RowName <- rownames(deglist)
 deglist2 <- deglist[, c("RowName", "pvalue")] # Optionally, reorder the columns
 head(deglist2)
 ```
-
 
 # Summary & Next Steps
 

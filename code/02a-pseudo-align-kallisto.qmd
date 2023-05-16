@@ -35,8 +35,6 @@ knitr::opts_chunk$set(
 
 ```
 
-
-
 Check kallisto `version` to confirm the correct file path to the program with the following command:
 
 ```{r, engine='bash'}
