@@ -1,0 +1,57 @@
+---
+title: "FISH 546 - Compendium"
+subtitle: "A Differential Gene Expression analysis of *Montipora capitata* corals from two life-history stages [![DOI](https://zenodo.org/badge/621460253.svg)](https://zenodo.org/badge/latestdoi/621460253)"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"  
+format:
+  html:
+    df-print: paged
+    toc: true
+    toc-location: left
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: arrow
+    code-overflow: wrap
+    theme: minty
+reference-location: margin
+citation-location: margin
+---
+
+## Overview
+In this analysis, we are going to look at the differentially expressed genes, and their functions, between coral larvae and coral recruits. The data for this is borrowed from [Dr. Ariana Huffmyer's](https://linktr.ee/ashuffmyer) study on *Montipora capitata* [Early Life History Energetics](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics).
+
+I will compare RNA expression between 4 larvae, and 4 recruits.
+
+::: column-margin
+[![Pocillopora damicornis larvae. E. Rivest/VIMS](https://scx2.b-cdn.net/gfx/news/hires/2018/genomicstudy.jpg){fig-alt="Two Pocillopora damicronis larvae floating against a black background. The larvae are torpedo-shaped, and have a brown core like a chocolate-filled eclair. The brown color is from the algal symbionts which enter the Pocillopora damicornis larvae before they are released during brooder spawning by adult corals."}](https://www.vims.edu/newsandevents/topstories/2018/coral_genex.php)
+:::
+
+::: column-margin
+[![Coral recruits. Heyward & Negri, AIMS](https://cdn.mos.cms.futurecdn.net/YDBoc5EJJBz4w9Mp2chzqB.jpg){fig-alt="Coral recruits like a small droplets of jelly with radial symmetry speckle a black background."}](https://www.nbcnews.com/id/wbna46595524)
+:::
+
+### End Goal
+The end goal of this analysis is to develop a heatmap that shows the top 20 differentially expressed gene functions between the coral larvae life stage and the coral recruit life stage. 
+
+
+![image something like this but better...](https://i.ibb.co/7G4fg25/Clustered-heatmap.png)
+
+
+### Code Pipeline
+#### Step 1. [Get Sequence & Genome Data using `curl`and `wget`](https://rpubs.com/sarah_tanja/1047965)
+
+#### Step 2. [Align Sequences to a Genome using `kallisto`](https://rpubs.com/sarah_tanja/1047958)
+
+#### Step 3. [Identify Differential Gene Expression using `DESeq2`](https://rpubs.com/sarah_tanja/1047962)
+
+#### Step 4. [Annotate the Reference Transcriptome using `UniProt` and `BLAST`](https://rpubs.com/sarah_tanja/1047968)
+
+#### Step 5. [Merge the Annotated Transcriptome with the List of Differentially Expressed Genes](https://rpubs.com/sarah_tanja/1047972)
+
+#### Step 6. [Visualize the Top Differentially Expressed Genes and their Functions](https://rpubs.com/sarah_tanja/1047950)
+
+

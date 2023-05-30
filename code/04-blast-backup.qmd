@@ -1,0 +1,184 @@
+---
+title: "Step 4: Annotate the Reference Transcriptome using `UniProt` and `BLAST`"
+subtitle: "Use `UniProt` (a protein sequence and gene-ontology (GO) functional information database) and `BLAST` (a sequence search algorithm) to annotate the **Montipora capitata** reference genome"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    df-print: paged
+    toc: true
+    toc-location: left
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    highlight-style: breeze
+    code-overflow: wrap
+    theme: minty
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,         # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  fig.width = 6,       # Set plot width in inches
+  fig.height = 4,      # Set plot height in inches
+  fig.align = "center" # Align plots to the center
+)
+
+```
+
+celeste's BLAST steps [HERE](https://github.com/course-fish546-2023/celeste-tunicate-devo/blob/main/code/04-blast.Rmd)
+
+### Install Packages
+
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
+if ("ggplot2" %in% rownames(installed.packages()) == 'FALSE') install.packages('ggplot2')
+```
+
+
+### Load Libraries
+
+```{r load libraries}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Using BLAST to annotate reference transcriptome
+Downloading complete UniProt database.
+UniProt is a freely accessible database of protein sequence and functional information that is continuously updated every 8 weeks.
+
+:::callout-warning
+This code takes a while to run, go take a computer break
+:::
+
+```{r, engine='bash'}
+cd ../data
+curl -O https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+mv uniprot_sprot.fasta.gz uniprot_sprot_r2023_01.fasta.gz
+gunzip -k uniprot_sprot_r2023_01.fasta.gz
+ls ../data
+```
+
+Using the NCBI blast software command 'makeblastdb' to create a blast database from the uniprot fasta file.
+
+```{r, engine='bash'}
+# if blast folder doesn't already exist, make it inside the output folder
+mkdir -p ../output/blast
+
+
+/home/shared/ncbi-blast-2.11.0+/bin/makeblastdb \
+-in ../data/uniprot_sprot_r2023_01.fasta \
+-dbtype prot \
+-out ../output/blast/uniprot_sprot_r2023_01
+```
+
+Lets look at what's in the reference transcriptome Montipora_capitata_HIv3.genes.cds.fna file before we BLAST it.
+
+```{r, engine='bash'}
+cd ../data
+head Montipora_capitata_HIv3.genes.cds.fna
+echo "How many sequences are there?"
+grep -c ">" Montipora_capitata_HIv3.genes.cds.fna
+```
+
+## Blasting the reference transcriptome and creating a tab file:
+
+::: callout-warning
+Running the following code chunk takes a very long time! You can do this overnight if you start the chunk and even if you close your browser window it will continue to run thanks to multiplexing!
+:::
+
+Blast the same reference fasta file that you used to do the pseudo-alignment in `kallisto`
+Here, we  the 'Montipora_capitata_HIv3.genes.cds.fna'to align our sample sequences. We run `BLAST` on this to annotate it and get a large .tab output file that have functional gene annotation associated with the coding sequences
+
+This will make a .tab file named 'Bsc-uniprot_blastx.tab'and save it in the `../output/blast` folder... 
+```{r, engine='bash'}
+/home/shared/ncbi-blast-2.11.0+/bin/blastx \    # The path to the blastx executable
+-query ../data/Montipora_capitata_HIv3.genes.cds.fna \    # The input query file containing nucleotide sequences
+-db ../output/blast/uniprot_sprot_r2023_01 \    # The path to the blast database (UniProt) to be used for comparison
+-out ../output/blast/Bsc-uniprot_blastx.tab \    # The output file to store the blastx results
+-evalue 1E-20 \    # The E-value threshold for reporting significant matches
+-num_threads 20 \    # The number of threads (parallel processes) to be used for the blastx search
+-max_target_seqs 1 \    # The maximum number of target sequences to report for each query
+-outfmt 6    # The output format of the blastx results (tabular format)
+
+```
+
+Lets take a little peak at the tab file we just created:
+
+```{r, engine='bash'}
+head -5 ../output/blast/Bsc-uniprot_blastx.tab
+wc -l ../output/blast/Bsc-uniprot_blastx.tab
+```
+
+Curl file from UniProt that contains protein data in a specified format (accession number, reviewed status, ID, protein name, gene names, organism name, length, GO function, GO, process, GO component, GO ID, interacting partners, EC number, Reactome pathway, UniPathway, and InterPro cross-references). 
+
+The file will be saved as stream.tsv.gz
+```{bash}
+cd ../data
+curl -H "Accept-Encoding: gzip" -o stream.tsv.gz "https://rest.uniprot.org/uniprotkb/stream?compressed=true&fields=accession%2Creviewed%2Cid%2Cprotein_name%2Cgene_names%2Corganism_name%2Clength%2Cgo_f%2Cgo%2Cgo_p%2Cgo_c%2Cgo_id%2Ccc_interaction%2Cec%2Cxref_reactome%2Cxref_unipathway%2Cxref_interpro&format=tsv&query=%28%2A%29%20AND%20%28reviewed%3Atrue%29"
+
+```
+
+```{r, engine = 'bash'}
+tr '|' '\t' < ../output/blast/Bsc-uniprot_blastx.tab | head -2
+# replace the "|" with "\t" in the file "Ab_4-uniprot_blastx.tab"
+# and save the output to the file "Ab_4-uniprot_blastx_sep.tab"
+tr '|' '\t' < ../output/blast/Bsc-uniprot_blastx.tab \
+> ../output/blast/Bsc-uniprot_blastx_sep.tab
+```
+
+Notice that the column `V3`contains the UniProt accession number, which is a unique identifier for each protein entry.
+```{r}
+blasttab <- read.csv("../output/blast/Bsc-uniprot_blastx_sep.tab", sep = '\t', header = FALSE)
+head(blasttab)
+```
+
+Read in annotation table from gannet server and save as `spgo`
+```{r}
+library(httr)
+url <- "https://gannet.fish.washington.edu/seashell/snaps/uniprot_table_r2023_01.tab"
+response <- GET(url, config(ssl_verifypeer = FALSE))
+spgo <- read.csv(text = rawToChar(response$content), sep = "\t", header = TRUE)
+```
+Check out the dataframe `spgo`.
+Notice that the column `Entry`contains the UniProt accession number, which is a unique identifier for each protein entry.
+```{r}
+head(spgo)
+```
+
+Join `blasttab` and `spgo` tables by the UniProt accession number (`blasttab$V3` and `spgo$Entry`) and save the output as `blast_annot_go.tab` file in the `../output/blast` folder
+```{r}
+left_join(blasttab, spgo, by = c("V3" = "Entry")) %>% select(
+  V1,
+  V3,
+  V13,
+  Protein.names,
+  Organism,
+  Gene.Ontology..biological.process.,
+  Gene.Ontology.IDs
+) %>% mutate(
+  V1 = str_replace_all(V1, pattern = "solid0078_20110412_FRAG_BC_WHITE_WHITE_F3_QV_SE_trimmed", replacement = "Ab")
+) %>% write_delim("../output/blast/blast_annot_go.tab", delim = '\t')
+```
+
+Look at the `blast_annot_go.tab` file which contains the original gene ID and Gene Ontology (GO) terms.
+```{r}
+blast_go <- read.delim(file = "../output/blast/blast_annot_go.tab", header = TRUE)
+head(blast_go)
+```
+
+
+This will help us understand our DEGlist from our differential gene expression analysis.
+::: {callout-info}
+Next Steps
+:::
+
+
+
