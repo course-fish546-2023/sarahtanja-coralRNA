@@ -1,0 +1,106 @@
+---
+title: "Step 5: Merge the Annotated Transcriptome with the List of Differentially Expressed Genes"
+subtitle: "Merge the table of differentially expressed genes **(generated with `DESeq2` in step 3)** to the table of annotated genes **(generated using `Blast`in step 4)** to explore the functions of the differentially expressed genes"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    df-print: paged
+    toc: true
+    toc-location: left
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: false
+    code-tools: true
+    code-copy: true
+    highlight-style: breeze
+    code-overflow: wrap
+    theme: minty
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  fig.width = 6,       # Set plot width in inches
+  fig.height = 4,      # Set plot height in inches
+  fig.align = "center" # Align plots to the center
+)
+```
+
+### Install Packages
+
+```{r install packages, filename='r'}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
+if ("ggplot2" %in% rownames(installed.packages()) == 'FALSE') install.packages('ggplot2')
+```
+
+### Load Libraries
+
+```{r load libraries, filename='r'}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Merge Annotated Table with DEGlist
+
+If you take a look at the DEGlist.tab file below, you will see that the row names themselves are the gene ID’s. 
+```{r, filename='r', eval=TRUE}
+diff_genes <- read.delim(file = "../output/deseq/DEGlist.tab", header = TRUE)
+head (diff_genes)
+```
+
+This contrasts with the blast GO annotated table `blast_annot_go.tab` that has a whole column (V1) dedicated to the gene ID in the same format.
+Additionally, notice that the column `V3`contains the UniProt accession number, which is a unique identifier for each protein entry.
+```{r, filename='r', eval=TRUE}
+blast_go <- read.delim(file = "../output/blast/blast_annot_go.tab", header = TRUE)
+head(blast_go)
+```
+
+As such, we first need to take the row names of the DEGlist.tab and make them into a new column. 
+```{r}
+diff_genes$gene_ID <- row.names(diff_genes) # adds the gene name into data frame as new column called gene_ID
+rownames(diff_genes) <- diff_genes$X # renames all the rows to 1-n instead of the gene name
+```
+
+Relocate the `gene_ID` column back to the first column
+```{r}
+diff_genes %>% 
+  relocate(gene_ID, .before= baseMean) # relocate gene_ID to the first column
+```
+Rename `V1`in the `blast_go` dataframe to `gene_ID`
+```{r}
+blast_go <- blast_go %>%
+  rename('V1' = 'gene_ID')
+```
+
+Rename `V3`in the `blast_go` dataframe to something more descriptive of the column, like `UniProt_acess_num`
+```{r, filename='r'}
+blast_go <- blast_go %>%
+  rename('V3' = 'UniProt_access_num')
+```
+
+Checkout new descriptive column names in blast_go dataframe
+```{r, filename='r'}
+head(blast_go)
+```
+
+Now that we have both the blast go and differential gene list in the right format, we can merge the two so that we have information regarding gene ID and function paired with differentially expressed genes.
+
+```{r}
+# Perform inner join between diff_genes and blast_go data frames based on shared "gene_ID" column
+annote_DEGlist <- merge(diff_genes, blast_go, by = "gene_ID", all = FALSE)
+
+# Print the merged table
+head(annote_DEGlist)
+```
+
+Finally, let’s write out the annotated DEG list to save it to our output directory.
+
+```{r}
+write.table(annote_DEGlist, "../output/annote_DEGlist.tab", row.names = T)
+```
+

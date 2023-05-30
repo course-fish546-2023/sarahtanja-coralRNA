@@ -1,0 +1,119 @@
+---
+title: "Step 6: Visualize the Top Differentially Expressed Genes and their Functions"
+subtitle: "Using the table of annotated differentially expressed genes **(generated in step 5)**, make some insightful data visualizations to understand the differing key biological processes between coral embryos and coral recruits"
+author: "Sarah Tanja"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    df-print: paged
+    toc: true
+    toc-location: left
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    code-fold: false
+    code-tools: true
+    code-copy: true
+    highlight-style: breeze
+    code-overflow: wrap
+    theme: minty
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  fig.width = 6,       # Set plot width in inches
+  fig.height = 4,      # Set plot height in inches
+  fig.align = "center" # Align plots to the center
+)
+```
+
+### Install Packages
+
+```{r install packages, filename='r'}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
+if ("ggplot2" %in% rownames(installed.packages()) == 'FALSE') install.packages('ggplot2')
+if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install('DESeq2')
+if ("kableExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('kableExtra')
+```
+
+### Load Libraries
+
+```{r load libraries, filename='r'}
+library(tidyverse)
+library(ggplot2)
+library(DESeq2)
+library(kableExtra)
+```
+
+### Read in Data
+
+```{r, filename='r'}
+annote_DEG <- read.delim(file = "../output/annote_DEGlist.tab", sep = " ", header = TRUE)
+head(annote_DEG)
+```
+
+```{r, filename='r', eval=FALSE, cache=TRUE}
+# Select top 20 differentially expressed genes
+deseq2.res <- results(deseq2.dds)
+res_ordered <- deseq2.res[order(deseq2.res$padj), ]
+#create object that we will reference later
+top_genes <- row.names(res_ordered)[1:20] 
+```
+
+```{r, filename = 'r', eval = TRUE}
+#| column: margin
+
+knitr::kable(
+  top_genes
+)
+
+```
+
+
+Next in order to merge the annotated blast table with the counts data we will need to transform the counts matrix into a data frame so that we can use the merge() function.
+```{r, filename='r'}
+#extract counts and normalizes them and then we put it all in a data frame 
+counts <- counts(deseq2.dds, normalized = TRUE)
+countsdf <- as.data.frame(counts)
+countsdf$access_num <- row.names(countsdf) #new column
+countsdf <- countsdf[ , c(5, 1:4)] #puts accession col in front
+```
+
+Take the row names of the `countmatrix` and make them into a new column. 
+```{r}
+countmatrix$gene_ID <- row.names(countmatrix) # adds the gene name into data frame as new column called gene_ID
+rownames(countmatrix) <- countmatrix$X # renames all the rows to 1-n instead of the gene name
+```
+
+Relocate the `gene_ID` column back to the first column
+```{r}
+countmatrix %>% 
+  relocate(gene_ID, .before= SRR22293447) # relocate gene_ID to the first column
+```
+
+
+Merge annotated DEG and countmatrix frame by an inner join so that we can just label genes that exist in the countsdf data frame. Note that there will be duplicate protein entries in this new merged data frame that got annotated the same in BLASTing. This is normal and so we are just going to get rid duplicates so that we are actually able to visualize whats going on.
+
+```{r, filename='r'}
+# merge the annote_DEG and countsmatrix table together
+top_annote <- merge(countmatrix, annote_DEG, by = "gene_ID", all = FALSE) #won't work unless they are both data frames
+
+# checking if there any duplicates
+head(which(duplicated(top_annote))) 
+```
+```{r}
+#eliminate duplicate accession numbers
+top_annote <- distinct(top_annote)
+
+#checking if there are any duplicates still, should be 0
+head(which(duplicated(top_annote))) 
+```
+
+```{r}
+head(top_annote)
+```
+
