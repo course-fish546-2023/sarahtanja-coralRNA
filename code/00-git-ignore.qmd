@@ -95,7 +95,7 @@ Use the following code as a bash terminal command to find and add files \>1G fro
 > Jump to the latest commit on `origin/master` :
 >
 > ```{r, engine='bash'}
-> #git reset --hard origin/master
+> #git reset --hard origin/main
 > ```
 
 ------------------------------------------------------------------------
