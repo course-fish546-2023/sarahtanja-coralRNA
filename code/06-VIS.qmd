@@ -56,7 +56,128 @@ annote_DEG <- read.delim(file = "../output/annote_DEGlist.tab", sep = " ", heade
 head(annote_DEG)
 ```
 
-```{r, filename='r', eval=FALSE, cache=TRUE}
+
+
+
+
+
+## Plotting Visualizations
+
+```{r}
+vsd <- vst(annote_DEG_sig, blind = FALSE)
+pca <- plotPCA(vsd, intgroup = "condition")
+pca
+
+ggsave("../figs/pca_go.png", plot = pca, width = 8, height = 4, dpi = 600)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Step 3 Revisited?
+:::callout-caution
+The following code chunks are duplicated from Step 3
+:::
+
+```{r, filename = 'r'}
+countmatrix <- read.delim("../output/trinity-matrix/mcap.isoform.counts.matrix", header = TRUE, sep = '\t')
+rownames(countmatrix) <- countmatrix$X
+countmatrix <- countmatrix[,-1]
+head(countmatrix)
+```
+This count matrix has 54,384 rows (genes) and 8 columns (samples) Each column represents a sample, and each row represents a gene. The 'count' is the number of times that gene was found in the RNA sequence of the sample.
+
+Round integers up to whole numbers for analysis
+
+```{r, filename = 'r'}
+countmatrix <- round(countmatrix, 0)
+head(countmatrix)
+```
+
+### Create Dataframe
+
+Here the code creates a `data.frame` named `deseq2.colData` containing information about the experimental conditions (embryos & recruits). It uses the column data dataframe named `deseq2.colData` to create a `DESeqDataSet` object using the `DESeqDataSetFromMatrix` function from the `DESeq2` package.
+
+```{r, filename = 'r'}
+# make a dataframe of 4 embryos and 4 recruits
+deseq2.colData <- data.frame(condition=factor(c(rep("embryos", 4), rep("recruits", 4))), 
+                             type=factor(rep("single-read", 8)))
+
+# set row names to match the column names in the count matrix
+rownames(deseq2.colData) <- colnames(data)
+
+# DESeqDataSet object created using the `DESeqDataSetFromMatrix` function
+deseq2.dds <- DESeqDataSetFromMatrix(countData = countmatrix,
+                                     colData = deseq2.colData, 
+                                     design = ~ condition)
+```
+
+### Negative Binomial: DESeq2 Results
+
+The `DESeqDataSet` object, named `deseq.dds`, is then passed to the `DESeq()` function to fit a negative binomial model and estimate dispersions.
+
+```{r, filename='r'}
+deseq2.dds <- DESeq(deseq2.dds)
+deseq2.res <- results(deseq2.dds)
+deseq2.res <- deseq2.res[order(rownames(deseq2.res)), ]
+dim(deseq2.res)
+summary(deseq2.res)
+# deseq2.res will be used in step 6.. is there a way to save this and read it in, rather than coming back and re-running this code? 
+
+```
+
+This code chunk subsets the deseq2.res data frame, selecting the rows where both of the following conditions are satisfied: `!is.na(deseq2.res$padj)` adjusted p-value is not missing
+`deseq2.res$padj <= 0.05` adjusted p-value is less than or equal to 0.05
+
+In summary, the code selects rows from the deseq2.res data frame where the padj values are not missing and are less than or equal to 0.05. It then calculates the dimensions (number of rows and columns) of this subset, giving us the number of significantly differentially expressed genes between our comparative groups 'embryos' and 'recruits'
+
+```{r}
+deseq2.sig.res <- (deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ])
+
+head(deseq2.sig.res)
+
+# calculate the dimensions of the resulting subset. The dim() function returns a vector with two elements: the number of rows and the number of columns in the subset.
+dim(deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ])
+```
+
+::: callout-important
+*Results:* Of the 54,384 rows (genes), 5,736 of them were significantly differentially expressed (p \<= 0.05) between *M. capitata* embryos and recruits.
+:::
+
+
+```{r, filename='r', cache=TRUE}
 # Select top 20 differentially expressed genes
 deseq2.res <- results(deseq2.dds)
 res_ordered <- deseq2.res[order(deseq2.res$padj), ]
@@ -64,7 +185,7 @@ res_ordered <- deseq2.res[order(deseq2.res$padj), ]
 top_genes <- row.names(res_ordered)[1:20] 
 ```
 
-```{r, filename = 'r', eval = TRUE}
+```{r, filename = 'r', cache=TRUE}
 #| column: margin
 
 knitr::kable(
@@ -99,10 +220,10 @@ countmatrix %>%
 Merge annotated DEG and countmatrix frame by an inner join so that we can just label genes that exist in the countsdf data frame. Note that there will be duplicate protein entries in this new merged data frame that got annotated the same in BLASTing. This is normal and so we are just going to get rid duplicates so that we are actually able to visualize whats going on.
 
 ```{r, filename='r'}
-# merge the annote_DEG and countsmatrix table together
+# merge the annote_DEG and countmatrix table together
 top_annote <- merge(countmatrix, annote_DEG, by = "gene_ID", all = FALSE) #won't work unless they are both data frames
 
-# checking if there any duplicates
+# checking for duplicates
 head(which(duplicated(top_annote))) 
 ```
 ```{r}
