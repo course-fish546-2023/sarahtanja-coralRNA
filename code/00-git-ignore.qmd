@@ -70,7 +70,35 @@ With these changes, whenever you run a git commit command, Git will first execut
 
 Use the following code as a bash terminal command to find and add files \>1G from repo to .gitignore `find . -size +1G | sed 's|^./||g' | cat >> .gitignore` from [THIS](https://github.com/sr320/course-fish546-2015/issues/43) Robert's Lab Course Issue
 
-## Burn it down
+## Using **`git revert`**:
+
+    -   Open your terminal or command prompt.
+
+    -   Navigate to the repository directory using the **`cd`** command.
+
+    -   Execute the following command to revert the most recent commit:
+
+        `git revert HEAD`
+
+    -   Git will create a new commit that undoes the changes introduced by the previous commit. A text editor will open for you to provide a commit message. Save and close the editor to complete the revert process.
+
+## Using **`git reset`**
+
+    -   Open your terminal or command prompt.
+
+    -   Navigate to the repository directory using the **`cd`** command.
+
+    -   Execute the following command to reset the repository to the commit before the most recent one:
+
+        `git reset HEAD~1`
+
+        This command moves the branch pointer to the commit before the most recent one, effectively undoing the last commit.
+
+    -   Note that the changes introduced in the undone commit will still be present in your working directory. You can then modify or discard them as needed.
+
+Please exercise caution when using these commands, as they modify the Git history. If you have already pushed the commit you want to undo to a remote repository, it's generally not recommended to modify the history, as it can cause conflicts for other team members. In that case, it may be better to consider reverting the changes in a new commit and pushing that instead.
+
+## Last Resort... Burn it down
 
 > In the event that you accidentally committed a big file (\>100MB), you can reset to the last successful git master branch push
 
