@@ -192,21 +192,25 @@ acs_ordered <- annote_counts_sig[order(annote_counts_sig$padj), ]
 
 
 ```{r}
-acs_ordered_matrix <- as.matrix(acs_ordered) # make this a matrix again so it can take the rownames()
+acs_ordered_matrix <- as.matrix(acs_ordered) # make this a matrix again so it can take the rownames() function
 
 gene_ID <- acs_ordered[,1] # making a vector of names
 
-rownames(acs_ordered_matrix) <- gene_ID #rename all rows by the gene_ID
+rownames(acs_ordered_matrix) <- gene_ID # rename all rows by the gene_ID
 ```
 
 
-# Select top 20 differentially expressed genes
-top_genes <- row.names(acs_ordered)[1:20]
+```{r}
+# Select top 20 differentially expressed genes from the ordered matrix
+top_genes <- row.names(acs_ordered_matrix)[1:20]
+kable(top_genes)
 
-# Extract counts and normalize
-counts <- counts(deseq2.dds, normalized = TRUE)
-counts_top <- counts[top_genes, ]
+# Identify top genes that are present in the counts_matrix_unico row names
+present_genes <- intersect(top_genes, row.names(acs_ordered_matrix))
 
+head(present_genes)
+
+```
 # Log-transform counts
 log_counts_top <- log2(counts_top + 1)
 
