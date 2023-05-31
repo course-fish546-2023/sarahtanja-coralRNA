@@ -92,15 +92,47 @@ Now that we have both the blast go and differential gene list in the right forma
 
 ```{r}
 # Perform inner join between diff_genes and blast_go data frames based on shared "gene_ID" column
-annote_DEGlist <- merge(diff_genes, blast_go, by = "gene_ID", all = FALSE)
+annote_DEG <- merge(diff_genes, blast_go, by = "gene_ID", all = FALSE)
 
 # Print the merged table
-head(annote_DEGlist)
+head(annote_DEG)
 ```
 
 Finally, let’s write out the annotated DEG list to save it to our output directory.
 
 ```{r}
-write.table(annote_DEGlist, "../output/annote_DEGlist.tab", row.names = T)
+write.table(annote_DEG, "../output/annote_DEG.tab", row.names = T)
 ```
 
+# Merge annotated DEG dataframe with count matrix
+
+## Read in count matrix
+
+```{r, filename = 'r'}
+countmatrix <- read.delim("../output/trinity-matrix/mcap.isoform.counts.matrix", header = TRUE, sep = '\t')
+rownames(countmatrix) <- countmatrix$X
+countmatrix <- countmatrix[,-1]
+head(countmatrix)
+```
+This count matrix has 54,384 rows (genes) and 8 columns (samples) Each column represents a sample, and each row represents a gene. The 'count' is the number of times that gene was found in the RNA sequence of the sample.
+
+### Make `countmatrix` a dataframe we can merge
+
+Round integers up to whole numbers (for analysis)
+```{r, filename = 'r'}
+countmatrix <- round(countmatrix, 0)
+head(countmatrix)
+```
+
+Row names are gene identifiers, let's make them their own column that we can use to match `countmatrix` rows with `annote_DEG` rows.
+Take the row names of the `countmatrix` and make them into a new column. 
+```{r}
+countmatrix$gene_ID <- row.names(countmatrix) # adds the gene name into data frame as new column called gene_ID
+rownames(countmatrix) <- countmatrix$X # renames all the rows to 1-n instead of the gene name
+```
+
+Relocate the `gene_ID` column back to the first column
+```{r}
+countmatrix %>% 
+  relocate(gene_ID, .before= 1) # relocate gene_ID to the first column
+```

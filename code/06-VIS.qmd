@@ -106,25 +106,7 @@ ggsave("../figs/pca_go.png", plot = pca, width = 8, height = 4, dpi = 600)
 
 
 
-## Step 3 Revisited?
-:::callout-caution
-The following code chunks are duplicated from Step 3
-:::
 
-```{r, filename = 'r'}
-countmatrix <- read.delim("../output/trinity-matrix/mcap.isoform.counts.matrix", header = TRUE, sep = '\t')
-rownames(countmatrix) <- countmatrix$X
-countmatrix <- countmatrix[,-1]
-head(countmatrix)
-```
-This count matrix has 54,384 rows (genes) and 8 columns (samples) Each column represents a sample, and each row represents a gene. The 'count' is the number of times that gene was found in the RNA sequence of the sample.
-
-Round integers up to whole numbers for analysis
-
-```{r, filename = 'r'}
-countmatrix <- round(countmatrix, 0)
-head(countmatrix)
-```
 
 ### Create Dataframe
 
