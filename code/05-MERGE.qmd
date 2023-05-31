@@ -47,43 +47,50 @@ library(ggplot2)
 
 ## Merge Annotated Table with DEGlist
 
-If you take a look at the DEGlist.tab file below, you will see that the row names themselves are the gene ID’s. 
+If you take a look at the DEGlist.tab file below, you will see that the row names themselves are the gene ID's.
+
 ```{r, filename='r', eval=TRUE}
 diff_genes <- read.delim(file = "../output/deseq/DEGlist.tab", header = TRUE)
 head (diff_genes)
 ```
 
-This contrasts with the blast GO annotated table `blast_annot_go.tab` that has a whole column (V1) dedicated to the gene ID in the same format.
-Additionally, notice that the column `V3`contains the UniProt accession number, which is a unique identifier for each protein entry.
+This contrasts with the blast GO annotated table `blast_annot_go.tab` that has a whole column (V1) dedicated to the gene ID in the same format. Additionally, notice that the column `V3`contains the UniProt accession number, which is a unique identifier for each protein entry.
+
 ```{r, filename='r', eval=TRUE}
 blast_go <- read.delim(file = "../output/blast/blast_annot_go.tab", header = TRUE)
 head(blast_go)
 ```
 
-As such, we first need to take the row names of the DEGlist.tab and make them into a new column. 
+As such, we first need to take the row names of the DEGlist.tab and make them into a new column.
+
 ```{r}
 diff_genes$gene_ID <- row.names(diff_genes) # adds the gene name into data frame as new column called gene_ID
 rownames(diff_genes) <- diff_genes$X # renames all the rows to 1-n instead of the gene name
 ```
 
 Relocate the `gene_ID` column back to the first column
+
 ```{r}
 diff_genes %>% 
   relocate(gene_ID, .before= baseMean) # relocate gene_ID to the first column
 ```
+
 Rename `V1`in the `blast_go` dataframe to `gene_ID`
+
 ```{r}
 blast_go <- blast_go %>%
   rename('V1' = 'gene_ID')
 ```
 
 Rename `V3`in the `blast_go` dataframe to something more descriptive of the column, like `UniProt_acess_num`
+
 ```{r, filename='r'}
 blast_go <- blast_go %>%
   rename('V3' = 'UniProt_access_num')
 ```
 
 Checkout new descriptive column names in blast_go dataframe
+
 ```{r, filename='r'}
 head(blast_go)
 ```
@@ -98,7 +105,7 @@ annote_DEG <- merge(diff_genes, blast_go, by = "gene_ID", all = FALSE)
 head(annote_DEG)
 ```
 
-Finally, let’s write out the annotated DEG list to save it to our output directory.
+Finally, let's write out the annotated DEG list to save it to our output directory.
 
 ```{r}
 write.table(annote_DEG, "../output/annote_DEG.tab", row.names = T)
@@ -114,25 +121,101 @@ rownames(countmatrix) <- countmatrix$X
 countmatrix <- countmatrix[,-1]
 head(countmatrix)
 ```
+
 This count matrix has 54,384 rows (genes) and 8 columns (samples) Each column represents a sample, and each row represents a gene. The 'count' is the number of times that gene was found in the RNA sequence of the sample.
 
 ### Make `countmatrix` a dataframe we can merge
 
 Round integers up to whole numbers (for analysis)
+
 ```{r, filename = 'r'}
 countmatrix <- round(countmatrix, 0)
 head(countmatrix)
 ```
 
-Row names are gene identifiers, let's make them their own column that we can use to match `countmatrix` rows with `annote_DEG` rows.
-Take the row names of the `countmatrix` and make them into a new column. 
+Row names are gene identifiers, let's make them their own column that we can use to match `countmatrix` rows with `annote_DEG` rows. Take the row names of the `countmatrix` and make them into a new column.
+
 ```{r}
 countmatrix$gene_ID <- row.names(countmatrix) # adds the gene name into data frame as new column called gene_ID
 rownames(countmatrix) <- countmatrix$X # renames all the rows to 1-n instead of the gene name
 ```
 
 Relocate the `gene_ID` column back to the first column
+
 ```{r}
 countmatrix %>% 
   relocate(gene_ID, .before= 1) # relocate gene_ID to the first column
 ```
+
+#### Merge the DEG with the countmatrix using an inner join
+This new dataframe `annote_counts` has both gene annotations and count data for each biological sample!
+```{r}
+annote_counts <- merge(annote_DEG, countmatrix, by="gene_ID", all=FALSE)
+dim(annote_counts)
+```
+:::callout-tip
+Notice that the annote_counts has 20427 observations, the same as `annote_DEG`... indicating that every gene that has an annotation from the reference genome (saved in `annote_DEG`) was kept and is part of the new dataframe, `annote_counts`
+:::
+
+::: callout-warning
+Watchout! Some of these may be duplicates...
+:::
+
+Check for duplicates
+```{r}
+head(which(duplicated(annote_counts)))
+```
+Eliminate duplicates
+```{r}
+annote_counts <- distinct(annote_counts)
+head(which(duplicated(annote_counts)))
+```
+Let's only look at the differntial expression that is significant (adjusted p value is less than 0.05)
+
+This code chunk subsets the deseq2.res data frame, selecting the rows where both of the following conditions are satisfied: `!is.na(annote_counts$padj)` adjusted p-value is not missing
+`annote_counts$padj <= 0.05` adjusted p-value is less than or equal to 0.05
+
+In summary, the code selects rows from the deseq2.res data frame where the padj values are not missing and are less than or equal to 0.05. It then calculates the dimensions (number of rows and columns) of this subset, giving us the number of significantly differentially expressed genes between our comparative groups 'embryos' and 'recruits'
+
+```{r}
+annote_counts_sig <- (annote_counts[!is.na(annote_counts$padj) & annote_counts$padj <= 0.05, ])
+
+head(annote_counts_sig)
+```
+
+
+Now that we have our annotated counts dataframe subset to only significant p-values, we can order them in descending adjusted p value
+```{r}
+acs_ordered <- annote_counts_sig[order(annote_counts_sig$padj), ]
+```
+
+
+
+```{r}
+acs_ordered_matrix <- as.matrix(acs_ordered) # make this a matrix again so it can take the rownames()
+
+gene_ID <- acs_ordered[,1] # making a vector of names
+
+rownames(acs_ordered_matrix) <- gene_ID #rename all rows by the gene_ID
+```
+
+
+# Select top 20 differentially expressed genes
+top_genes <- row.names(acs_ordered)[1:20]
+
+# Extract counts and normalize
+counts <- counts(deseq2.dds, normalized = TRUE)
+counts_top <- counts[top_genes, ]
+
+# Log-transform counts
+log_counts_top <- log2(counts_top + 1)
+
+# Generate heatmap
+heatmap_20 <- pheatmap(log_counts_top, scale = "row")
+
+ggsave("../figs/heatmap_20.png", plot = heatmap_20, width = 8, height = 5, dpi = 600)
+
+heatmap_20
+
+```
+
