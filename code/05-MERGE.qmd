@@ -36,6 +36,7 @@ knitr::opts_chunk$set(
 ```{r install packages, filename='r'}
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
 if ("ggplot2" %in% rownames(installed.packages()) == 'FALSE') install.packages('ggplot2')
+if ("RColorBrewer" %in% rownames(installed.packages()) == 'FALSE') install.packages('RColorBrewer')
 ```
 
 ### Load Libraries
@@ -43,6 +44,7 @@ if ("ggplot2" %in% rownames(installed.packages()) == 'FALSE') install.packages('
 ```{r load libraries, filename='r'}
 library(tidyverse)
 library(ggplot2)
+library(RColorBrewer)
 ```
 
 ## Merge Annotated Table with DEGlist
@@ -77,14 +79,14 @@ diff_genes %>%
 
 Rename `V1`in the `blast_go` dataframe to `gene_ID`
 
-```{r}
+```{r, filename='r', eval=FALSE}
 blast_go <- blast_go %>%
   rename('V1' = 'gene_ID')
 ```
 
 Rename `V3`in the `blast_go` dataframe to something more descriptive of the column, like `UniProt_acess_num`
 
-```{r, filename='r'}
+```{r, filename='r', eval=FALSE}
 blast_go <- blast_go %>%
   rename('V3' = 'UniProt_access_num')
 ```
@@ -97,12 +99,12 @@ head(blast_go)
 
 Now that we have both the blast go and differential gene list in the right format, we can merge the two so that we have information regarding gene ID and function paired with differentially expressed genes.
 
-```{r}
+```{r, filename='r', eval=FALSE}
 # Perform inner join between diff_genes and blast_go data frames based on shared "gene_ID" column
 annote_DEG <- merge(diff_genes, blast_go, by = "gene_ID", all = FALSE)
 
 # Print the merged table
-head(annote_DEG)
+kable(annote_DEG)
 ```
 
 Finally, let's write out the annotated DEG list to save it to our output directory.
@@ -148,6 +150,7 @@ countmatrix %>%
 ```
 
 #### Merge the DEG with the countmatrix using an inner join
+
 This new dataframe `annote_counts` has both gene annotations and count data for each biological sample!
 ```{r}
 annote_counts <- merge(annote_DEG, countmatrix, by="gene_ID", all=FALSE)
@@ -170,56 +173,10 @@ Eliminate duplicates
 annote_counts <- distinct(annote_counts)
 head(which(duplicated(annote_counts)))
 ```
-Let's only look at the differntial expression that is significant (adjusted p value is less than 0.05)
 
-This code chunk subsets the deseq2.res data frame, selecting the rows where both of the following conditions are satisfied: `!is.na(annote_counts$padj)` adjusted p-value is not missing
-`annote_counts$padj <= 0.05` adjusted p-value is less than or equal to 0.05
-
-In summary, the code selects rows from the deseq2.res data frame where the padj values are not missing and are less than or equal to 0.05. It then calculates the dimensions (number of rows and columns) of this subset, giving us the number of significantly differentially expressed genes between our comparative groups 'embryos' and 'recruits'
+Finally, let's write out the annotated DEG list to save it to our output directory.
 
 ```{r}
-annote_counts_sig <- (annote_counts[!is.na(annote_counts$padj) & annote_counts$padj <= 0.05, ])
-
-head(annote_counts_sig)
-```
-
-
-Now that we have our annotated counts dataframe subset to only significant p-values, we can order them in descending adjusted p value
-```{r}
-acs_ordered <- annote_counts_sig[order(annote_counts_sig$padj), ]
-```
-
-
-
-```{r}
-acs_ordered_matrix <- as.matrix(acs_ordered) # make this a matrix again so it can take the rownames() function
-
-gene_ID <- acs_ordered[,1] # making a vector of names
-
-rownames(acs_ordered_matrix) <- gene_ID # rename all rows by the gene_ID
-```
-
-
-```{r}
-# Select top 20 differentially expressed genes from the ordered matrix
-top_genes <- row.names(acs_ordered_matrix)[1:20]
-kable(top_genes)
-
-# Identify top genes that are present in the counts_matrix_unico row names
-present_genes <- intersect(top_genes, row.names(acs_ordered_matrix))
-
-head(present_genes)
-
-```
-# Log-transform counts
-log_counts_top <- log2(counts_top + 1)
-
-# Generate heatmap
-heatmap_20 <- pheatmap(log_counts_top, scale = "row")
-
-ggsave("../figs/heatmap_20.png", plot = heatmap_20, width = 8, height = 5, dpi = 600)
-
-heatmap_20
-
+write.table(annote_counts, "../output/annote_counts.tab", row.names = T)
 ```
 

@@ -25,8 +25,8 @@ knitr::opts_chunk$set(
   eval = TRUE,        # Evaluate code chunks
   warning = FALSE,     # Hide warnings
   message = FALSE,     # Hide messages
-  fig.width = 6,       # Set plot width in inches
-  fig.height = 4,      # Set plot height in inches
+  #fig.width = 6,       # Set plot width in inches
+  #fig.height = 4,      # Set plot height in inches
   fig.align = "center" # Align plots to the center
 )
 ```
@@ -38,6 +38,8 @@ if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages
 if ("ggplot2" %in% rownames(installed.packages()) == 'FALSE') install.packages('ggplot2')
 if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install('DESeq2')
 if ("kableExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('kableExtra')
+if ("RColorBrewer" %in% rownames(installed.packages()) == 'FALSE') install.packages('RColorBrewer')
+if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap') 
 ```
 
 ### Load Libraries
@@ -47,176 +49,162 @@ library(tidyverse)
 library(ggplot2)
 library(DESeq2)
 library(kableExtra)
+library(RColorBrewer)
+library(pheatmap)
 ```
 
 ### Read in Data
 
 ```{r, filename='r'}
-annote_DEG <- read.delim(file = "../output/annote_DEGlist.tab", sep = " ", header = TRUE)
-head(annote_DEG)
+annote_counts <- read.delim(file = "../output/annote_counts.tab", sep = " ", header = TRUE)
+head(annote_counts)
 ```
 
 
+Let's only look at the differential expression that is significant (adjusted p value is less than 0.05)
 
-
-
-
-## Plotting Visualizations
-
-```{r}
-vsd <- vst(annote_DEG_sig, blind = FALSE)
-pca <- plotPCA(vsd, intgroup = "condition")
-pca
-
-ggsave("../figs/pca_go.png", plot = pca, width = 8, height = 4, dpi = 600)
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Create Dataframe
-
-Here the code creates a `data.frame` named `deseq2.colData` containing information about the experimental conditions (embryos & recruits). It uses the column data dataframe named `deseq2.colData` to create a `DESeqDataSet` object using the `DESeqDataSetFromMatrix` function from the `DESeq2` package.
-
-```{r, filename = 'r'}
-# make a dataframe of 4 embryos and 4 recruits
-deseq2.colData <- data.frame(condition=factor(c(rep("embryos", 4), rep("recruits", 4))), 
-                             type=factor(rep("single-read", 8)))
-
-# set row names to match the column names in the count matrix
-rownames(deseq2.colData) <- colnames(data)
-
-# DESeqDataSet object created using the `DESeqDataSetFromMatrix` function
-deseq2.dds <- DESeqDataSetFromMatrix(countData = countmatrix,
-                                     colData = deseq2.colData, 
-                                     design = ~ condition)
-```
-
-### Negative Binomial: DESeq2 Results
-
-The `DESeqDataSet` object, named `deseq.dds`, is then passed to the `DESeq()` function to fit a negative binomial model and estimate dispersions.
-
-```{r, filename='r'}
-deseq2.dds <- DESeq(deseq2.dds)
-deseq2.res <- results(deseq2.dds)
-deseq2.res <- deseq2.res[order(rownames(deseq2.res)), ]
-dim(deseq2.res)
-summary(deseq2.res)
-# deseq2.res will be used in step 6.. is there a way to save this and read it in, rather than coming back and re-running this code? 
-
-```
-
-This code chunk subsets the deseq2.res data frame, selecting the rows where both of the following conditions are satisfied: `!is.na(deseq2.res$padj)` adjusted p-value is not missing
-`deseq2.res$padj <= 0.05` adjusted p-value is less than or equal to 0.05
+This code chunk subsets the deseq2.res data frame, selecting the rows where both of the following conditions are satisfied: `!is.na(annote_counts$padj)` adjusted p-value is not missing
+`annote_counts$padj <= 0.05` adjusted p-value is less than or equal to 0.05
 
 In summary, the code selects rows from the deseq2.res data frame where the padj values are not missing and are less than or equal to 0.05. It then calculates the dimensions (number of rows and columns) of this subset, giving us the number of significantly differentially expressed genes between our comparative groups 'embryos' and 'recruits'
 
 ```{r}
-deseq2.sig.res <- (deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ])
+annote_counts_sig <- (annote_counts[!is.na(annote_counts$padj) & annote_counts$padj <= 0.05, ])
 
-head(deseq2.sig.res)
-
-# calculate the dimensions of the resulting subset. The dim() function returns a vector with two elements: the number of rows and the number of columns in the subset.
-dim(deseq2.res[!is.na(deseq2.res$padj) & deseq2.res$padj <= 0.05, ])
-```
-
-::: callout-important
-*Results:* Of the 54,384 rows (genes), 5,736 of them were significantly differentially expressed (p \<= 0.05) between *M. capitata* embryos and recruits.
-:::
-
-
-```{r, filename='r', cache=TRUE}
-# Select top 20 differentially expressed genes
-deseq2.res <- results(deseq2.dds)
-res_ordered <- deseq2.res[order(deseq2.res$padj), ]
-#create object that we will reference later
-top_genes <- row.names(res_ordered)[1:20] 
-```
-
-```{r, filename = 'r', cache=TRUE}
-#| column: margin
-
-knitr::kable(
-  top_genes
-)
-
+head(annote_counts_sig)
 ```
 
 
-Next in order to merge the annotated blast table with the counts data we will need to transform the counts matrix into a data frame so that we can use the merge() function.
-```{r, filename='r'}
-#extract counts and normalizes them and then we put it all in a data frame 
-counts <- counts(deseq2.dds, normalized = TRUE)
-countsdf <- as.data.frame(counts)
-countsdf$access_num <- row.names(countsdf) #new column
-countsdf <- countsdf[ , c(5, 1:4)] #puts accession col in front
-```
-
-Take the row names of the `countmatrix` and make them into a new column. 
+Now that we have our annotated counts dataframe subset to only significant p-values, we can order them in descending adjusted p value
 ```{r}
-countmatrix$gene_ID <- row.names(countmatrix) # adds the gene name into data frame as new column called gene_ID
-rownames(countmatrix) <- countmatrix$X # renames all the rows to 1-n instead of the gene name
+acs_ordered <- annote_counts_sig[order(annote_counts_sig$padj), ]
 ```
 
-Relocate the `gene_ID` column back to the first column
+
+Make it a matrix so we can give it rownames by GO term 
 ```{r}
-countmatrix %>% 
-  relocate(gene_ID, .before= SRR22293447) # relocate gene_ID to the first column
+acs_ordered_matrix <- as.matrix(acs_ordered) # make this a matrix again so it can take the rownames() function
+
+GO_term <- acs_ordered$Gene.Ontology..biological.process. # making a vector of names
+
+rownames(acs_ordered_matrix) <- GO_term # rename all rows 
 ```
 
+We want the heatmap to be a matrix that has GO term rownames, biological sample columns, and log2 transformed count data as values!
 
-Merge annotated DEG and countmatrix frame by an inner join so that we can just label genes that exist in the countsdf data frame. Note that there will be duplicate protein entries in this new merged data frame that got annotated the same in BLASTing. This is normal and so we are just going to get rid duplicates so that we are actually able to visualize whats going on.
-
-```{r, filename='r'}
-# merge the annote_DEG and countmatrix table together
-top_annote <- merge(countmatrix, annote_DEG, by = "gene_ID", all = FALSE) #won't work unless they are both data frames
-
-# checking for duplicates
-head(which(duplicated(top_annote))) 
-```
 ```{r}
-#eliminate duplicate accession numbers
-top_annote <- distinct(top_annote)
+# Select top differentially expressed genes from the ordered matrix
+top_genes <- acs_ordered_matrix[1:20, ]
+```
 
-#checking if there are any duplicates still, should be 0
-head(which(duplicated(top_annote))) 
+Select only the biological sample columns from the top_genes matrix to work with 
+```{r}
+bio_samples <-  c("SRR22293447",
+                  "SRR22293448",
+                  "SRR22293449",
+                  "SRR22293450",
+                  "SRR22293451",
+                  "SRR22293452",
+                  "SRR22293453",
+                  "SRR22293454")
+
+heat_matrix <- top_genes[ , bio_samples ]
+```
+
+Log2 transform the matrix data
+```{r}
+heat_matrix_num <- matrix(as.numeric(heat_matrix),
+                          ncol = ncol(heat_matrix))
+
+colnames(heat_matrix_num) <- colnames(heat_matrix)
+
+#scrub up protein names list so that each entry is not as long 
+protein_names <- rownames(heat_matrix) %>%
+  sub(' \\([^)]+\\).*$', '', .) %>%
+  sub('\\[.*?\\]', ' ', .)
+
+rownames(heat_matrix_num) <- protein_names
+```
+
+
+```{r}
+heat_matrix_log2 <- log2(heat_matrix_num + 1)
 ```
 
 ```{r}
-head(top_annote)
+#define some color palettes to play with from RColorBrewer
+BrBG <- colorRampPalette(brewer.pal(8, "BrBG"))(25)
+blue <- colorRampPalette(brewer.pal(8, "Blues"))(25)
+blind <- brewer.pal(8, "Set1")
 ```
+
+```{r}
+# generating heatmaps
+heatmap(heat_matrix_log2,
+          scale = "column",  # Scale the columns
+          col = BrBG,        # Set the color palette
+          cexCol = 0.8,       # adjust size of column labels
+          cexRow = 0.8)
+
+```
+
+
+```{r}
+# Customize the heatmap using pheatmap
+pheatmap(heat_matrix_log2,
+          labels_col = c("embryo", "embryo", "embryo", "embryo", "recruit", "recruit", "recruit", "recruit"),
+          scale="column",
+          cellwidth = 15,
+          cellheight = 11,
+          fontsize = 12,
+          show_rownames = FALSE,
+          cexRow=0.8,
+          color = BrBG,
+          ylab = "GO Terms",         # y-axis label
+          xlab = "Sample Run ID",    # x-axis label
+          key=TRUE,                  # Add a legend
+          trace="none",              # Remove the trace lines
+          cexCol=0.8)                # Adjust column label font size
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

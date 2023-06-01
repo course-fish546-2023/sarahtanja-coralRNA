@@ -38,9 +38,6 @@ I will compare RNA expression between 4 larvae, and 4 recruits.
 The end goal of this analysis is to develop a heatmap that shows the top 20 differentially expressed gene functions between the coral larvae life stage and the coral recruit life stage. 
 
 
-![image something like this but better...](https://i.ibb.co/7G4fg25/Clustered-heatmap.png)
-
-
 ### Code Pipeline
 #### Step 1. [Get Sequence & Genome Data using `curl`and `wget`](https://rpubs.com/sarah_tanja/1047965)
 
@@ -50,8 +47,8 @@ The end goal of this analysis is to develop a heatmap that shows the top 20 diff
 
 #### Step 4. [Annotate the Reference Transcriptome using `UniProt` and `BLAST`](https://rpubs.com/sarah_tanja/1047968)
 
-#### Step 5. [Merge the Annotated Transcriptome with the List of Differentially Expressed Genes](https://rpubs.com/sarah_tanja/1047972)
+#### Step 5. [Merge the Annotated Transcriptome with the List of Differentially Expressed Genes](https://rpubs.com/sarah_tanja/1048835)
 
-#### Step 6. [Visualize the Top Differentially Expressed Genes and their Functions](https://rpubs.com/sarah_tanja/1047950)
+#### Step 6. [Visualize the Top Differentially Expressed Genes and their Functions](https://rpubs.com/sarah_tanja/1048848)
 
 
